@@ -1,0 +1,45 @@
+﻿<Window x:Class="BuildMaterials.Views.AddCustomerView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BuildMaterials.Views"
+        xmlns:viewmodels="clr-namespace:BuildMaterials.ViewModels"
+        mc:Ignorable="d" SizeToContent="Height" MinWidth="250" x:Name="window"
+        Title="Новый заказчик" Width="250" WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <viewmodels:AddCustomerViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Margin="5,5,5,5">
+            <TextBlock>Наименование организации</TextBlock>
+            <TextBox Text="{Binding Path=Customer.CompanyName}"/>
+
+            <TextBlock>Адрес</TextBlock>
+            <TextBox Text="{Binding Path=Customer.Adress}"/>
+
+            <TextBlock>Контактное лицо</TextBlock>
+            <TextBox Text="{Binding Path=Customer.CompanyPerson}"/>
+
+            <TextBlock>Контактный телефон</TextBlock>
+            <TextBox Text="{Binding Path=Customer.CompanyPhone}"/>
+
+            <TextBlock>Банк</TextBlock>
+            <TextBox Text="{Binding Path=Customer.Bank}"/>
+
+            <TextBlock>Банковские реквизиты</TextBlock>
+            <TextBox Text="{Binding Path=Customer.BankProp}"/>
+
+            <TextBlock>УНП</TextBlock>
+            <TextBox Text="{Binding Path=Customer.UNP}"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
+            <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding AddCommand}">Добавить</Button>
+            <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding CancelCommand}">Отмена</Button>
+        </StackPanel>
+    </Grid>
+</Window>

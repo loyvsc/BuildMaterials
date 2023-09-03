@@ -1,0 +1,236 @@
+﻿<Window x:Class="BuildMaterials.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        WindowStartupLocation="CenterScreen"
+        xmlns:conveters="clr-namespace:BuildMaterials.Converters"
+        xmlns:viewmodels="clr-namespace:BuildMaterials.ViewModels"
+        xmlns:local="clr-namespace:BuildMaterials.Views"
+        mc:Ignorable="d" x:Name="Root"
+        Title="Учет строительных материалов в магазине" MinHeight="450" MinWidth="760" Height="450" Width="760" >
+    <Window.DataContext>
+        <viewmodels:MainWindowViewModel x:Name="dc"/>
+    </Window.DataContext>
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveChangesCommand}"/>
+    </Window.InputBindings>
+    <Window.Resources>
+        <CollectionViewSource x:Key="SellersFIO" Source="{Binding SellersFIO}"/>
+        <conveters:BoolConveter x:Key="boolConverter"/>
+        <conveters:DateStringConverter x:Key="dateConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20px"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Menu>
+            <MenuItem Header="Файл">
+                <MenuItem Header="Выйти" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="Справка">
+                <MenuItem Header="О программме" Command="{Binding AboutProgrammCommand}"/>
+                <MenuItem Header="Настройки" Command="{Binding SettingsCommand}"/>
+            </MenuItem>
+        </Menu>
+        <TabControl Margin="5,3,5,5" Grid.Row="1" SelectionChanged="TabControl_SelectionChanged">
+            <TabItem Header="Справочник" HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30px"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25px"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.RowSpan="2">
+                        <Button Command="{Binding AddRowCommand, Mode=OneWay}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/plus.ico" StretchDirection="DownOnly"/>
+                        </Button>
+                        <Button Command="{Binding DeleteRowCommand}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/delete.ico"/>
+                        </Button>
+                        <Button Command="{Binding PrintCommand}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/print.ico"/>
+                        </Button>
+                    </StackPanel>
+                    <TextBox Grid.Column="1" Margin="0,0,0,5" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}"/>
+                    <TabControl Grid.Column="1" Grid.Row="1" SelectionChanged="TabControl_SelectionChanged">
+                        <TabItem Header="Материалы" x:Name="materialsTab">
+                            <DataGrid ItemsSource="{Binding MaterialsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Наименование" Binding="{Binding Name}"/>
+                                    <DataGridTextColumn Header="Производитель" Binding="{Binding Manufacturer}"/>
+                                    <DataGridTextColumn Header="Стоимость" Binding="{Binding Price}"/>
+                                    <DataGridTextColumn Header="Текущее количество" Binding="{Binding Count}"/>
+                                    <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
+                                    <DataGridTextColumn Header="Дата поступления" Binding="{Binding EnterDate, Converter={StaticResource dateConverter}}" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Количество поступления" Binding="{Binding EnterCount}" IsReadOnly="True"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Сотрудники" x:Name="employersTab">
+                            <StackPanel>
+                                <FrameworkElement x:Name="ProxyElement" Visibility="Collapsed"/>
+                                <DataGrid ItemsSource="{Binding EmployeesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" CellEditEnding="DataGrid_CellEditEnding">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                        <DataGridTextColumn Header="Фамилия" Binding="{Binding SurName}"/>
+                                        <DataGridTextColumn Header="Имя" Binding="{Binding Name}"/>
+                                        <DataGridTextColumn Header="Отчество" Binding="{Binding Pathnetic}"/>
+                                        <DataGridTextColumn Header="Должность" Binding="{Binding Position}"/>
+                                        <DataGridTextColumn Header="Номер телефона" Binding="{Binding PhoneNumber}"/>
+                                        <DataGridTextColumn Header="Уровень доступа" Binding="{Binding AccessLevelInString}" Visibility="{Binding CanViewConfidentional}"
+                                                        IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="Пароль" IsReadOnly="{Binding CanUserEditEmployeeConf, Source={x:Reference ProxyElement}}" Binding="{Binding Password}" Visibility="{Binding IsConfidentionNotView}"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Заказчики" x:Name="customersTab">
+                            <DataGrid ItemsSource="{Binding CustomersList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" CanUserDeleteRows="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Наименование организации" Binding="{Binding CompanyName}"/>
+                                    <DataGridTextColumn Header="Адресс" Binding="{Binding Adress}"/>
+                                    <DataGridTextColumn Header="Контактное лицо" Binding="{Binding CompanyPerson}"/>
+                                    <DataGridTextColumn Header="Контактный телефон" Binding="{Binding CompanyPhone}"/>
+                                    <DataGridTextColumn Header="Банк" Binding="{Binding Bank}"/>
+                                    <DataGridTextColumn Header="Банковские реквизиты" Binding="{Binding BankProp}"/>
+                                    <DataGridTextColumn Header="УНП" Binding="{Binding UNP}" Visibility="{Binding CanAdd_EditConfidentional}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Поставщики" x:Name="postavTab">
+                            <DataGrid ItemsSource="{Binding ProvidersList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Наименование организации" Binding="{Binding CompanyName}"/>
+                                    <DataGridTextColumn Header="Адресс" Binding="{Binding Adress}"/>
+                                    <DataGridTextColumn Header="Контактное лицо" Binding="{Binding CompanyPerson}"/>
+                                    <DataGridTextColumn Header="Контактный телефон" Binding="{Binding CompanyPhone}"/>
+                                    <DataGridTextColumn Header="Банк" Binding="{Binding Bank}"/>
+                                    <DataGridTextColumn Header="Банковские реквизиты" Binding="{Binding BankProp}"/>
+                                    <DataGridTextColumn Header="УНП" Binding="{Binding UNP}" Visibility="{Binding CanAdd_EditConfidentional}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Учет" x:Name="uchetTab">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30px"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Vertical" Grid.Column="0">
+                        <Button Command="{Binding AddRowCommand, Mode=OneWay}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/plus.ico"/>
+                        </Button>
+                        <Button Command="{Binding DeleteRowCommand}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/delete.ico"/>
+                        </Button>
+                        <Button Command="{Binding PrintCommand}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/print.ico"/>
+                        </Button>
+                    </StackPanel>
+                    <DataGrid Grid.Column="1" ItemsSource="{Binding TradesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                            <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
+                            <DataGridTextColumn Header="ФИО сотрудника" IsReadOnly="True" Binding="{Binding SellerFio}"/>
+                            <DataGridTextColumn Header="Наименование товара" Binding="{Binding MaterialName}"/>
+                            <DataGridTextColumn Header="Количество" Binding="{Binding Count}"/>
+                            <DataGridTextColumn Header="Стоимость" Binding="{Binding Price}"/>
+                            <DataGridTextColumn Header="Сумма" Binding="{Binding Summ}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Документы">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30px"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Vertical" Grid.Column="0">
+                        <Button Command="{Binding AddRowCommand, Mode=OneWay}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/plus.ico"/>
+                        </Button>
+                        <Button Command="{Binding DeleteRowCommand}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/delete.ico"/>
+                        </Button>
+                        <Button Command="{Binding PrintCommand}" Style="{StaticResource ResourceKey=mainButtons}">
+                            <Image Source="/img/print.ico"/>
+                        </Button>
+                    </StackPanel>
+                    <TabControl Grid.Column="1" SelectionChanged="TabControl_SelectionChanged">
+                        <TabItem x:Name="ttnTab" Header="ТТН">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding TTNList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Грузоотправитель" Binding="{Binding Shipper}"/>
+                                    <DataGridTextColumn Header="Грузополучатель" Binding="{Binding Consignee}"/>
+                                    <DataGridTextColumn Header="Плательщик" Binding="{Binding Payer}"/>
+                                    <DataGridTextColumn Header="Количество" Binding="{Binding Count}"/>
+                                    <DataGridTextColumn Header="Цена" Binding="{Binding Price}"/>
+                                    <DataGridTextColumn Header="Наименование материала" Binding="{Binding MaterialName}"/>
+                                    <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
+                                    <DataGridTextColumn Header="Масса" Binding="{Binding Weight}"/>
+                                    <DataGridTextColumn Header="Сумма" Binding="{Binding Summ}"/>
+                                    <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem x:Name="accountTab" Header="Счет-фактура">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding AccountsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Продавец" Binding="{Binding Seller}"/>
+                                    <DataGridTextColumn Header="Грузоотправитель" Binding="{Binding ShipperName}"/>
+                                    <DataGridTextColumn Header="Адрес грузоотправителя" Binding="{Binding ShipperAdress}"/>
+                                    <DataGridTextColumn Header="Грузополучатель" Binding="{Binding ConsigneeName}"/>
+                                    <DataGridTextColumn Header="Адрес грузополучатель" Binding="{Binding ConsigneeAdress}"/>
+                                    <DataGridTextColumn Header="Покупатель" Binding="{Binding Buyer}"/>
+                                    <DataGridTextColumn Header="Количество" Binding="{Binding Count}"/>
+                                    <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
+                                    <DataGridTextColumn Header="Цена" Binding="{Binding Price}"/>
+                                    <DataGridTextColumn Header="Налогагая ставка" Binding="{Binding Tax}"/>
+                                    <DataGridTextColumn Header="Сумма налога" Binding="{Binding TaxSumm}"/>
+                                    <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem x:Name="contractTab" Header="Договор купли-продажи">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding ContractsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Продавец" Binding="{Binding Seller}"/>
+                                    <DataGridTextColumn Header="Покупатель" Binding="{Binding Buyer}"/>
+                                    <DataGridTextColumn Header="Наименование материала" Binding="{Binding MaterialName}"/>
+                                    <DataGridTextColumn Header="Количество" Binding="{Binding Count}"/>
+                                    <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
+                                    <DataGridTextColumn Header="Стоимость" Binding="{Binding Price}"/>
+                                    <DataGridTextColumn Header="Сумма" Binding="{Binding Summ}"/>
+                                    <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

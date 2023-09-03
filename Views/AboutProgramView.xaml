@@ -1,0 +1,22 @@
+﻿<Window x:Class="BuildMaterials.Views.AboutProgramView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
+        Title="О программе" MaxWidth="400" MaxHeight="160" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="25px"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="/img/icon.ico" Width="32" Margin="5,5,5,5" VerticalAlignment="Center"/>
+                <TextBlock>ПС "Учет строительных материалов в магазине"<LineBreak/>.NET 7<LineBreak/>SQLITE 3.12.2</TextBlock>
+            </StackPanel>
+            <TextBlock Margin="5,0,5,0" TextWrapping="Wrap" Text="Данное приложение создано для работников магазина строительных материалов в котором есть данные о запасе и товарообороте материалов."/>
+        </StackPanel>
+        <Button Grid.Row="1" Margin="5,0,5,5" HorizontalAlignment="Right" MaxWidth="75" MinWidth="75" Click="Button_Click">Закрыть</Button>
+    </Grid>
+</Window>
