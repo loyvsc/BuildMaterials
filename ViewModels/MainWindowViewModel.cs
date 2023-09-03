@@ -2,6 +2,7 @@
 using BuildMaterials.Other;
 using BuildMaterials.Views;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -166,14 +167,14 @@ namespace BuildMaterials.ViewModels
         public MainWindowViewModel()
         {
             CurrentEmployee = new Employee();
-            MaterialsList = App.DBContext.Materials.ToListAsync().Result;
-            EmployeesList = App.DBContext.Employees.ToListAsync().Result;
-            CustomersList = App.DBContext.Customers.ToListAsync().Result;
-            ProvidersList = App.DBContext.Providers.ToListAsync().Result;
-            TradesList = App.DBContext.Trades.ToListAsync().Result;
-            TTNList = App.DBContext.TTNs.ToListAsync().Result;
-            AccountsList = App.DBContext.Accounts.ToListAsync().Result;
-            ContractsList = App.DBContext.Contracts.ToListAsync().Result;
+            MaterialsList = App.DBContext.Materials.ToList();
+            EmployeesList = App.DBContext.Employees.ToList();
+            CustomersList = App.DBContext.Customers.ToList();
+            ProvidersList = App.DBContext.Providers.ToList();
+            TradesList = App.DBContext.Trades.ToList();
+            TTNList = App.DBContext.TTNs.ToList();
+            AccountsList = App.DBContext.Accounts.ToList();
+            ContractsList = App.DBContext.Contracts.ToList();
 
             IsPrintEnabled = Visibility.Collapsed;
             Settings = new Settings();
@@ -184,6 +185,23 @@ namespace BuildMaterials.ViewModels
         public MainWindowViewModel(Employee employee) : this()
         {
             CurrentEmployee = employee;
+        }
+
+        public List<Employee> SearchEmployees(string text)
+        {
+            List<Employee> employees = new List<Employee>(128);
+            using(MySqlConnection _connection = new MySqlConnection(App.DBContext.ConnectionString))
+            {
+                using (MySqlCommand command = new MySqlCommand("SELECT * FROM Employee WH"))
+                {
+                    MySqlDataReader reader = command.ExecuteReaderAsync().Result;
+                    while (reader.Read())
+                    {
+
+                    }
+                }
+            }
+            return employees;
         }
 
         public IQueryable<T> CreateSearchQuery<T>(DbSet<T> db_set, string value) where T : class

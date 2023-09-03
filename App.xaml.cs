@@ -5,6 +5,10 @@ namespace BuildMaterials
 {
     public partial class App : Application
     {
-        public static readonly ApplicationContext DBContext = new();
+        public static ApplicationContext DBContext = null!;
+        public App()
+        {
+            DBContext = new ApplicationContext();
+        }
     }
 }

@@ -19,11 +19,11 @@ namespace BuildMaterials.BD
         public DbSet<Contract> Contracts { get; set; } = null!;
         public string[] AccessLevel => new string[4] { "Минимальный", "Низкий", "Средний", "Максимальный" };
 
-        private readonly string connectionString = "server=localhost;user=root;database=buildmaterials;password=5469090;";
+        public readonly string ConnectionString = "server=localhost;user=root;database=buildmaterials;password=5469090;";
 
         public ApplicationContext()
         {
-            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
                 connection.Open();
                 MySqlCommand command = new MySqlCommand("CREATE DATABASE IF NOT EXISTS buildmaterials", connection);
@@ -39,7 +39,7 @@ namespace BuildMaterials.BD
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 34)));
+            optionsBuilder.UseMySql(ConnectionString, new MySqlServerVersion(new Version(8, 0, 34)));
         }
     }
 }
