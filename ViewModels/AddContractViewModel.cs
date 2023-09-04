@@ -1,7 +1,7 @@
 ﻿using BuildMaterials.Models;
+using MySqlConnector;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using System.Windows;
 using System.Windows.Input;
 
@@ -16,7 +16,27 @@ namespace BuildMaterials.ViewModels
         private readonly Window _window = null!;
         public readonly Settings Settings;
 
-        public string?[] MaterialNames => App.DBContext.Materials.Select(x => x.Name).ToArray();
+        public string?[] MaterialNames
+        {
+            get
+            {
+                List<string> list = new List<string>(64);
+                using (MySqlConnection _connection = new MySqlConnection(App.DBContext.ConnectionString))
+                {
+                    _connection.Open();
+                    using (MySqlCommand command = new MySqlCommand("SELECT Name FROM Materials", _connection))
+                    {
+                        MySqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            list.Add(reader.GetString(0));
+                        }
+                    }
+                    _connection.Close();
+                }
+                return list.ToArray();
+            }
+        }
 
         public List<Customer> CustomersList
         {
@@ -30,7 +50,7 @@ namespace BuildMaterials.ViewModels
         }
 
         public string[] EmployeeNames => App.DBContext.Employees.Select(x => x.SurName + " " + x.Name + " " + x.Pathnetic).ToArray();
-        
+
         public int SelectedShipperIndex;
         public int SelectedConsigneeIndex;
 

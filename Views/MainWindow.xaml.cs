@@ -17,9 +17,12 @@ namespace BuildMaterials.Views
             DataContext = mainViewModel;
         }
 
-        public MainWindow(Employee employee) : this()
+        public MainWindow(Employee employee)
         {
+            InitializeComponent();
+            mainViewModel = new ViewModels.MainWindowViewModel();
             mainViewModel.CurrentEmployee = employee;
+            DataContext = mainViewModel;
         }
 
         protected override void OnClosing(CancelEventArgs e)

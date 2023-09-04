@@ -1,9 +1,7 @@
 ﻿using BuildMaterials.Models;
+using MySqlConnector;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace BuildMaterials.ViewModels
@@ -19,14 +17,35 @@ namespace BuildMaterials.ViewModels
         }
     }
     public class AddTTNViewModel
-    {       
+    {
         public Models.TTN TTN { get; set; }
 
         public ICommand CancelCommand { get => new RelayCommand((sender) => _window.Close()); }
         public ICommand AddCommand { get => new RelayCommand((sender) => AddMaterial()); }
 
         private readonly Window _window = null!;
-        public List<string?> MaterialNames => App.DBContext.Materials.Select(x => x.Name).ToList();
+        public List<string?> MaterialNames
+        {
+            get
+            {
+                List<string?> list = new List<string?>(64);
+                using (MySqlConnection _connection = new MySqlConnection(App.DBContext.ConnectionString))
+                {
+                    _connection.Open();
+                    using (MySqlCommand command = new MySqlCommand("SELECT Name FROM Materials", _connection))
+                    {
+                        MySqlDataReader reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            list.Add(reader.GetString(0));
+                        }
+                    }
+                    _connection.Close();
+                }
+                return list;
+            }
+
+        }
 
         public readonly Settings Settings;
         public List<Customer>? CustomersList { get; set; }
@@ -56,7 +75,7 @@ namespace BuildMaterials.ViewModels
                 App.DBContext.TTNs.Add(TTN);
                 App.DBContext.SaveChanges();
                 _window.DialogResult = true;
-               return;
+                return;
             }
             MessageBox.Show("Не вся информация была введена!", "Новый ТТН", MessageBoxButton.OK, MessageBoxImage.Error);
         }

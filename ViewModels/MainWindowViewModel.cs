@@ -187,60 +187,6 @@ namespace BuildMaterials.ViewModels
             CurrentEmployee = employee;
         }
 
-        public List<Employee> SearchEmployees(string text)
-        {
-            List<Employee> employees = new List<Employee>(128);
-            using(MySqlConnection _connection = new MySqlConnection(App.DBContext.ConnectionString))
-            {
-                using (MySqlCommand command = new MySqlCommand("SELECT * FROM Employee WH"))
-                {
-                    MySqlDataReader reader = command.ExecuteReaderAsync().Result;
-                    while (reader.Read())
-                    {
-
-                    }
-                }
-            }
-            return employees;
-        }
-
-        public IQueryable<T> CreateSearchQuery<T>(DbSet<T> db_set, string value) where T : class
-        {
-            IQueryable<T> query = db_set;
-
-            List<System.Linq.Expressions.Expression> expressions = new List<System.Linq.Expressions.Expression>();
-
-            ParameterExpression parameter = System.Linq.Expressions.Expression.Parameter(typeof(T), "p");
-
-            MethodInfo contains_method = typeof(string).GetMethod("Contains", new[] { typeof(string) })!;
-
-            foreach (PropertyInfo prop in typeof(T).GetProperties().Where(x => x.PropertyType == typeof(string)))
-            {
-                MemberExpression member_expression = System.Linq.Expressions.Expression.PropertyOrField(parameter, prop.Name);
-
-                ConstantExpression value_expression = System.Linq.Expressions.Expression.Constant(value, typeof(string));
-
-                MethodCallExpression contains_expression = System.Linq.Expressions.Expression.Call(member_expression, contains_method, value_expression);
-
-                expressions.Add(contains_expression);
-            }
-
-            if (expressions.Count == 0)
-                return query;
-
-            System.Linq.Expressions.Expression or_expression = expressions[0];
-
-            for (int i = 1; i < expressions.Count; i++)
-            {
-                or_expression = System.Linq.Expressions.Expression.OrElse(or_expression, expressions[i]);
-            }
-
-            Expression<Func<T, bool>> expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(
-                or_expression, parameter);
-
-            return query.Where(expression);
-        }
-
         public void Search(string text)
         {
             try
@@ -254,18 +200,17 @@ namespace BuildMaterials.ViewModels
                                 MaterialsList = App.DBContext.Materials.ToList();
                                 break;
                             }
-                            MaterialsList = CreateSearchQuery<Material>(App.DBContext.Materials, text).ToList();
+                            MaterialsList = App.DBContext.Materials.Search(text);
                             break;
                         }
                     case "employersTab":
                         {
-
                             if (text.Equals(string.Empty))
                             {
                                 EmployeesList = App.DBContext.Employees.ToList();
                                 break;
                             }
-                            EmployeesList = CreateSearchQuery<Employee>(App.DBContext.Employees, text).ToList();
+                            EmployeesList = App.DBContext.EmployeeSearch(text);
                             break;
                         }
                     case "customersTab":
@@ -275,7 +220,7 @@ namespace BuildMaterials.ViewModels
                                 CustomersList = App.DBContext.Customers.ToList();
                                 break;
                             }
-                            CustomersList = CreateSearchQuery<Customer>(App.DBContext.Customers, text).ToList();
+                           // CustomersList = CreateSearchQuery<Customer>(App.DBContext.Customers, text).ToList();
                             break;
                         }
                     case "postavTab":
@@ -285,7 +230,7 @@ namespace BuildMaterials.ViewModels
                                 ProvidersList = App.DBContext.Providers.ToList();
                                 break;
                             }
-                            ProvidersList = CreateSearchQuery<Provider>(App.DBContext.Providers, text).ToList();
+                            //ProvidersList = CreateSearchQuery<Provider>(App.DBContext.Providers, text).ToList();
                             break;
                         }
                     case "uchetTab":
@@ -295,7 +240,7 @@ namespace BuildMaterials.ViewModels
                                 TradesList = App.DBContext.Trades.ToList();
                                 break;
                             }
-                            TradesList = CreateSearchQuery<Trade>(App.DBContext.Trades, text).ToList();
+                            //TradesList = CreateSearchQuery<Trade>(App.DBContext.Trades, text).ToList();
                             break;
                         }
                     case "ttnTab":
@@ -305,7 +250,7 @@ namespace BuildMaterials.ViewModels
                                 TTNList = App.DBContext.TTNs.ToList();
                                 break;
                             }
-                            TTNList = CreateSearchQuery<TTN>(App.DBContext.TTNs, text).ToList();
+                            //TTNList = CreateSearchQuery<TTN>(App.DBContext.TTNs, text).ToList();
                             break;
                         }
                     case "accountTab":
@@ -315,7 +260,7 @@ namespace BuildMaterials.ViewModels
                                 AccountsList = App.DBContext.Accounts.ToList();
                                 break;
                             }
-                            AccountsList = CreateSearchQuery<Account>(App.DBContext.Accounts, text).ToList();
+                            //AccountsList = CreateSearchQuery<Account>(App.DBContext.Accounts, text).ToList();
                             break;
                         }
                     case "contractTab":
@@ -325,7 +270,7 @@ namespace BuildMaterials.ViewModels
                                 ContractsList = App.DBContext.Contracts.ToList();
                                 break;
                             }
-                            ContractsList = CreateSearchQuery<Contract>(App.DBContext.Contracts, text).ToList();
+                            //ContractsList = CreateSearchQuery<Contract>(App.DBContext.Contracts, text).ToList();
                             break;
                         }
                 }
@@ -453,7 +398,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Material buf = App.DBContext.Materials.Local.ElementAt(SelectedRowIndex);
+                            Material buf = App.DBContext.Materials.ElementAt(SelectedRowIndex);
                             App.DBContext.Materials.Remove(buf);
                             App.DBContext.SaveChanges();
                             MaterialsList = App.DBContext.Materials.ToList();

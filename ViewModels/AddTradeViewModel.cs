@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Security.Policy;
 using System.Windows;
 using System.Windows.Input;
 
@@ -28,7 +26,7 @@ namespace BuildMaterials.ViewModels
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
         public string[] SellersFIO => App.DBContext.Employees.AsNoTracking().Select(x => $"{x.Name} {x.SurName} {x.Pathnetic}").ToArrayAsync().Result;
-        public Models.Material[] Materials => App.DBContext.Materials.AsNoTracking().Select(x => new Models.Material() {ID = x.ID, Name = x.Name,Count = x.Count }).ToArrayAsync().Result;
+        public Models.Material[] Materials => App.DBContext.Materials.Select("SELECT ID,Name,Count FROM Materials").ToArray();
 
         public Models.Material SelectedMaterial
         {
@@ -36,7 +34,7 @@ namespace BuildMaterials.ViewModels
             set
             {
                 _selMat = value;
-                MaxCountValue = "но не больше "+value.Count;
+                MaxCountValue = "но не больше " + value.Count;
                 OnPropertyChanged("SelectedMaterial");
             }
         }
@@ -79,7 +77,7 @@ namespace BuildMaterials.ViewModels
             Trade.MaterialName = SelectedMaterial.Name;
             if (Trade.IsValid)
             {
-                App.DBContext.Materials.First(x => x.ID == SelectedMaterial.ID).Count -= Trade.Count;
+                App.DBContext.Materials.Query($"UPDATE Materials SET COUNT = COUNT-{Trade.Count} WHERE id = {SelectedMaterial.ID};");
                 App.DBContext.Trades.Add(Trade);
                 App.DBContext.SaveChanges();
                 _window.DialogResult = true;
