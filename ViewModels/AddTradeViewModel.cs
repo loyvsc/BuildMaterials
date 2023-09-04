@@ -77,7 +77,7 @@ namespace BuildMaterials.ViewModels
             Trade.MaterialName = SelectedMaterial.Name;
             if (Trade.IsValid)
             {
-                App.DBContext.Materials.Query($"UPDATE Materials SET COUNT = COUNT-{Trade.Count} WHERE id = {SelectedMaterial.ID};");
+                App.DBContext.Query($"UPDATE Materials SET COUNT = COUNT-{Trade.Count} WHERE id = {SelectedMaterial.ID};");
                 App.DBContext.Trades.Add(Trade);
                 App.DBContext.SaveChanges();
                 _window.DialogResult = true;

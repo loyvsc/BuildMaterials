@@ -1,4 +1,5 @@
-﻿using BuildMaterials.Models;
+﻿using BuildMaterials.BD;
+using BuildMaterials.Models;
 using MySqlConnector;
 using System.Collections.Generic;
 using System.Windows;
@@ -29,7 +30,7 @@ namespace BuildMaterials.ViewModels
             get
             {
                 List<string?> list = new List<string?>(64);
-                using (MySqlConnection _connection = new MySqlConnection(App.DBContext.ConnectionString))
+                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
                 {
                     _connection.Open();
                     using (MySqlCommand command = new MySqlCommand("SELECT Name FROM Materials", _connection))
