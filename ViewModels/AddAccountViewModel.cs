@@ -94,7 +94,6 @@ namespace BuildMaterials.ViewModels
             if (Account.IsValid)
             {
                 App.DBContext.Accounts.Add(Account);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

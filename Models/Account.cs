@@ -1,11 +1,8 @@
 ﻿using BuildMaterials.BD;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuildMaterials.Models
 {
-    [PrimaryKey("ID")]
     public class Account : ITable
     {
         public int ID { get; set; }
@@ -22,7 +19,7 @@ namespace BuildMaterials.Models
         public float Tax { get; set; } = 0;
         public float TaxSumm { get; set; } = 0;
         public DateTime? Date { get; set; }
-        [NotMapped]
+
         public string? DateInString => Date?.ToShortDateString();
 
         public Account() { }

@@ -1,10 +1,8 @@
 ﻿using BuildMaterials.BD;
-using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace BuildMaterials.Models
 {
-    [PrimaryKey("ID")]
     public class Contract : ITable
     {
         public int ID { get; set; }

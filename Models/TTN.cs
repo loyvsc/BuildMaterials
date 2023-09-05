@@ -1,13 +1,10 @@
 ﻿using BuildMaterials.BD;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuildMaterials.Models
 {
     public class TTN : ITable
     {
-        [Key]
         public int ID { get; set; }
         public string? Shipper { get; set; } = string.Empty;
         public string? Consignee { get; set; } = string.Empty;
@@ -19,7 +16,7 @@ namespace BuildMaterials.Models
         public float Weight { get; set; } = 0;
         public float Summ { get; set; } = 0;
         public DateTime? Date { get; set; }
-        [NotMapped]
+
         public string? DateInString => Date?.ToShortDateString();
 
         public TTN() { }

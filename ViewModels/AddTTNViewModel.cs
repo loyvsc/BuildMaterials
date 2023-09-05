@@ -74,7 +74,6 @@ namespace BuildMaterials.ViewModels
             if (TTN.IsValid)
             {
                 App.DBContext.TTNs.Add(TTN);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

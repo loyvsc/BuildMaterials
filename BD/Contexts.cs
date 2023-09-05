@@ -1,5 +1,4 @@
 ﻿using BuildMaterials.Models;
-using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace BuildMaterials.BD
         public List<T> Select(string query);
     }
 
-    public class ApplicationContext : DbContext
+    public class ApplicationContext
     {
         public MaterialsTable Materials { get; set; } = null!;
         public EmployeesTable Employees { get; set; } = null!;
@@ -30,13 +29,11 @@ namespace BuildMaterials.BD
         public TradesTable Trades { get; set; } = null!;
         public TTNSTable TTNs { get; set; } = null!;
         public AccountsTable Accounts { get; set; } = null!;
-        public DbSet<Contract> Contracts { get; set; } = null!;
+        public ContractsTable Contracts { get; set; } = null!;
         public string[] AccessLevel => new string[4] { "Минимальный", "Низкий", "Средний", "Максимальный" };
 
         public ApplicationContext()
         {
-            Database.EnsureDeleted();
-            Database.EnsureCreated();
             InitializeDatabase();
             if (Employees?.Count() == 0)
             {
@@ -59,6 +56,7 @@ namespace BuildMaterials.BD
             Trades = new TradesTable();
             TTNs = new TTNSTable();
             Accounts = new AccountsTable();
+            Contracts = new ContractsTable();
         }
 
         private void _createDatabase()
@@ -87,10 +85,6 @@ namespace BuildMaterials.BD
             }
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseMySql(StaticValues.ConnectionString, new MySqlServerVersion(new Version(8, 0, 34)));
-        }
     }
 
     public class MaterialsTable : IDBSetBase<Material>
@@ -1203,7 +1197,7 @@ namespace BuildMaterials.BD
 
         public List<Account> ToList()
         {
-            return Select("SELECT * FROM ttns;");
+            return Select("SELECT * FROM accounts;");
         }
 
         public List<Account> Select(string query)
@@ -1252,13 +1246,15 @@ namespace BuildMaterials.BD
             Init();
         }
 
-        //TODO: переделать этот и все методы класса
         private void Init()
         {
             _connection.Open();
             using (MySqlCommand command = new MySqlCommand
                 ("CREATE TABLE IF NOT EXISTS contracts " +
-                "(" +
+                "(seller varchar(100), buyer varchar(100)," +
+                "materialname varchar(100), count float not null," +
+                "countunits varchar(30), price varchar(20)," +
+                "summ varchar(30), date date," +
                 " PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQuery();
@@ -1268,7 +1264,7 @@ namespace BuildMaterials.BD
 
         public int Count()
         {
-            using (MySqlCommand _command = new MySqlCommand("SELECT COUNT(ID) FROM accounts;", _connection))
+            using (MySqlCommand _command = new MySqlCommand("SELECT COUNT(ID) FROM contracts;", _connection))
             {
                 _connection.Open();
                 string? bdValue = _command.ExecuteScalar() as string;
@@ -1281,31 +1277,26 @@ namespace BuildMaterials.BD
             }
         }
 
-        public BuildMaterials.Models.Account ElementAt(int id)
+        public BuildMaterials.Models.Contract ElementAt(int id)
         {
-            Account obj = new Account();
+            Contract obj = new Contract();
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.Open();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM accounts WHERE id={id};", _connection))
+                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM contracts WHERE id={id};", _connection))
                 {
                     MySqlDataReader reader = command.ExecuteReaderAsync().Result;
                     while (reader.Read())
                     {
                         obj.ID = reader.GetInt32(0);
                         obj.Seller = reader.GetString(1);
-                        obj.ShipperName = reader.GetString(2);
-                        obj.ShipperAdress = reader.GetString(3);
-                        obj.ConsigneeName = reader.GetString(4);
-                        obj.ConsigneeAdress = reader.GetString(5);
-                        obj.Buyer = reader.GetString(6);
-                        obj.CountUnits = reader.GetString(7);
-                        obj.Count = reader.GetFloat(8);
-                        obj.Price = reader.GetFloat(9);
-                        obj.Summ = reader.GetFloat(10);
-                        obj.Tax = reader.GetFloat(11);
-                        obj.TaxSumm = reader.GetFloat(12);
-                        obj.Date = reader.GetDateTime(13);
+                        obj.Buyer = reader.GetString(2);
+                        obj.MaterialName = reader.GetString(3);
+                        obj.Count = reader.GetFloat(4);
+                        obj.CountUnits = reader.GetString(5);
+                        obj.Price = reader.GetString(6);
+                        obj.Summ = reader.GetString(7);
+                        obj.Date = reader.GetDateTime(8);
                     }
                 }
                 _connection.Close();
@@ -1313,14 +1304,13 @@ namespace BuildMaterials.BD
             return obj;
         }
 
-        public void Add(Account obj)
+        public void Add(Contract obj)
         {
-            using (MySqlCommand command = new MySqlCommand("INSERT INTO accounts " +
-                "(Seller, ShipperName, ShipperAdress, ConsigneeName, ConsigneeAdress," +
-                "Buyer,CountUnits, Count,Price,Summ,Tax,TaxSumm,Date) VALUES" +
-                $"('{obj.Seller}','{obj.ShipperName}','{obj.ShipperAdress}','{obj.ConsigneeName}'," +
-                $"'{obj.ConsigneeAdress}',{obj.Buyer},{obj.CountUnits},{obj.Count},{obj.Price}," +
-                $"{obj.Summ},{obj.Tax},{obj.TaxSumm},'{obj.DateInString}');", _connection))
+            using (MySqlCommand command = new MySqlCommand("INSERT INTO contracts " +
+                "(Seller, Buyer, MaterialName, Count, CountUnits," +
+                "Price,Summ, Date) VALUES" +
+                $"('{obj.Seller}','{obj.Buyer}','{obj.MaterialName}','{obj.Count}'," +
+                $"'{obj.CountUnits}','{obj.Price}','{obj.Summ}','{obj.Date}');", _connection))
             {
                 _connection.Open();
                 command.ExecuteNonQuery();
@@ -1328,7 +1318,7 @@ namespace BuildMaterials.BD
             }
         }
 
-        public void Remove(Account obj)
+        public void Remove(Contract obj)
         {
             Remove(obj.ID);
         }
@@ -1336,59 +1326,53 @@ namespace BuildMaterials.BD
         public void Remove(int id)
         {
             _connection.Open();
-            using (MySqlCommand command = new MySqlCommand($"DELETE FROM accounts WHERE id={id};", _connection))
+            using (MySqlCommand command = new MySqlCommand($"DELETE FROM contracts WHERE id={id};", _connection))
             {
                 command.ExecuteNonQuery();
             }
             _connection.Close();
         }
 
-        public List<Account> Search(string text)
+        public List<Contract> Search(string text)
         {
-            List<Account> ttns = new List<Account>(64);
+            List<Contract> contracts = new List<Contract>(64);
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.Open();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM accounts" +
-                    $" WHERE CONCAT(Seller,' ', ShipperName,' ',ShipperAdress,' ',ConsigneeName," +
+                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM contracts" +
+                    $" WHERE CONCAT(Seller,' ', Buyer,' ',MaterialName,' ',ConsigneeName," +
                     $"' ',ConsigneeAdress,' ',Buyer) like '%{text}%';)", _connection))
                 {
                     MySqlDataReader reader = command.ExecuteReaderAsync().Result;
                     while (reader.Read())
                     {
-                        Account obj = new Account()
-                        {
-                            ID = reader.GetInt32(0),
-                            Seller = reader.GetString(1),
-                            ShipperName = reader.GetString(2),
-                            ShipperAdress = reader.GetString(3),
-                            ConsigneeName = reader.GetString(4),
-                            ConsigneeAdress = reader.GetString(5),
-                            Buyer = reader.GetString(6),
-                            CountUnits = reader.GetString(7),
-                            Count = reader.GetFloat(8),
-                            Price = reader.GetFloat(9),
-                            Summ = reader.GetFloat(10),
-                            Tax = reader.GetFloat(11),
-                            TaxSumm = reader.GetFloat(12),
-                            Date = reader.GetDateTime(13),
-                        };
-                        ttns.Add(obj);
+                        Contract obj = new Contract();
+
+                        obj.ID = reader.GetInt32(0);
+                        obj.Seller = reader.GetString(1);
+                        obj.Buyer = reader.GetString(2);
+                        obj.MaterialName = reader.GetString(3);
+                        obj.Count = reader.GetFloat(4);
+                        obj.CountUnits = reader.GetString(5);
+                        obj.Price = reader.GetString(6);
+                        obj.Summ = reader.GetString(7);
+                        obj.Date = reader.GetDateTime(8);
+                        contracts.Add(obj);
                     }
                 }
                 _connection.Close();
             }
-            return ttns;
+            return contracts;
         }
 
-        public List<Account> ToList()
+        public List<Contract> ToList()
         {
-            return Select("SELECT * FROM ttns;");
+            return Select("SELECT * FROM contracts;");
         }
 
-        public List<Account> Select(string query)
+        public List<Contract> Select(string query)
         {
-            List<Account> ttns = new List<Account>(64);
+            List<Contract> ttns = new List<Contract>(64);
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.Open();
@@ -1397,23 +1381,17 @@ namespace BuildMaterials.BD
                     MySqlDataReader reader = command.ExecuteReaderAsync().Result;
                     while (reader.Read())
                     {
-                        Account obj = new Account()
-                        {
-                            ID = reader.GetInt32(0),
-                            Seller = reader.GetString(1),
-                            ShipperName = reader.GetString(2),
-                            ShipperAdress = reader.GetString(3),
-                            ConsigneeName = reader.GetString(4),
-                            ConsigneeAdress = reader.GetString(5),
-                            Buyer = reader.GetString(6),
-                            CountUnits = reader.GetString(7),
-                            Count = reader.GetFloat(8),
-                            Price = reader.GetFloat(9),
-                            Summ = reader.GetFloat(10),
-                            Tax = reader.GetFloat(11),
-                            TaxSumm = reader.GetFloat(12),
-                            Date = reader.GetDateTime(13),
-                        };
+                        Contract obj = new Contract();
+
+                        obj.ID = reader.GetInt32(0);
+                        obj.Seller = reader.GetString(1);
+                        obj.Buyer = reader.GetString(2);
+                        obj.MaterialName = reader.GetString(3);
+                        obj.Count = reader.GetFloat(4);
+                        obj.CountUnits = reader.GetString(5);
+                        obj.Price = reader.GetString(6);
+                        obj.Summ = reader.GetString(7);
+                        obj.Date = reader.GetDateTime(8);
                         ttns.Add(obj);
                     }
                 }

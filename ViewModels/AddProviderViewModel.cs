@@ -27,7 +27,6 @@ namespace BuildMaterials.ViewModels
             if (Provider.IsValid)
             {
                 App.DBContext.Providers.Add(Provider);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

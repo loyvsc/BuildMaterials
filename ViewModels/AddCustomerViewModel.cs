@@ -27,7 +27,6 @@ namespace BuildMaterials.ViewModels
             if (Customer.IsValid)
             {
                 App.DBContext.Customers.Add(Customer);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

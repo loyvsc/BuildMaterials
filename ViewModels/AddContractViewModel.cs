@@ -112,7 +112,6 @@ namespace BuildMaterials.ViewModels
             if (Contract.IsValid)
             {
                 App.DBContext.Contracts.Add(Contract);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

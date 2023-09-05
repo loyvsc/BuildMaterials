@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace BuildMaterials.Models
+﻿namespace BuildMaterials.Models
 {
     public class Provider : BD.ITable
     {
-        [Key]
         public int ID { get; set; }
         public string? CompanyName { get; set; } = string.Empty;
         public string? Adress { get; set; } = string.Empty;

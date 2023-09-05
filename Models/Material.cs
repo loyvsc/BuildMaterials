@@ -1,12 +1,10 @@
 ﻿using BuildMaterials.BD;
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace BuildMaterials.Models
 {
     public class Material : ITable
     {
-        [Key]
         public int ID { get; set; }
         public string? Name { get; set; }
         public string? Manufacturer { get; set; }

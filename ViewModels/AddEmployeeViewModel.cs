@@ -30,7 +30,6 @@ namespace BuildMaterials.ViewModels
             if (Employee.IsValid)
             {
                 App.DBContext.Employees.Add(Employee);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

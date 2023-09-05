@@ -30,7 +30,6 @@ namespace BuildMaterials.ViewModels
                 Material.EnterCount = Material.Count;
                 Material.EnterDate = DateTime.Now.Date;
                 App.DBContext.Materials.Add(Material);
-                App.DBContext.SaveChanges();
                 _window.DialogResult = true;
                 return;
             }

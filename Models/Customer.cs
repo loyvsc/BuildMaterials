@@ -1,13 +1,11 @@
 ﻿using BuildMaterials.BD;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace BuildMaterials.Models
 {
     public class Customer : ITable
     {
-        [Key]
         public int ID { get; set; }
         public string? CompanyName { get; set; } = string.Empty;
         public string? Adress { get; set; } = string.Empty;

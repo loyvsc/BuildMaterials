@@ -1,12 +1,9 @@
 ﻿using BuildMaterials.BD;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuildMaterials.Models
 {
     public class Employee : ITable
     {
-        [Key]
         public int ID { get; set; }
         public string? Name { get; set; }
         public string? SurName { get; set; }
@@ -15,7 +12,7 @@ namespace BuildMaterials.Models
         public string? PhoneNumber { get; set; }
         public int Password { get; set; }
         public int AccessLevel { get; set; }
-        [NotMapped]
+
         public string AccessLevelInString => App.DBContext.AccessLevel[AccessLevel];
 
         public Employee() { }

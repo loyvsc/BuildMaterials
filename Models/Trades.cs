@@ -1,17 +1,14 @@
 ﻿using BuildMaterials.BD;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BuildMaterials.Models
 {
 
     public class Trade : ITable
     {
-        [Key]
         public int ID { get; set; }
         public DateTime? Date { get; set; } = null;
-        [NotMapped]
+
         public string? DateInString
         {
             get=> Date?.ToShortDateString();
@@ -22,7 +19,6 @@ namespace BuildMaterials.Models
         public float Count { get; set; } = 0;
         public float Price { get; set; } = 0;
 
-        [NotMapped]
         public float Summ => Count * Price;
 
         public Trade() { }

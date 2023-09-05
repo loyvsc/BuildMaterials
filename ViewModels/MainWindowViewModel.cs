@@ -6,7 +6,6 @@ using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -132,7 +131,7 @@ namespace BuildMaterials.ViewModels
         public ICommand AddRowCommand => new RelayCommand((sender) => AddRow());
         public ICommand DeleteRowCommand => new RelayCommand((sender) => DeleteRow());
         public ICommand PrintCommand => new RelayCommand((sender) => PrintContract());
-        public ICommand SaveChangesCommand => new RelayCommand((sender) => SaveChanges());
+        public ICommand SaveChangesCommand => new RelayCommand((sender) => SaveChanges(new CancelEventArgs()));
 
         private string _searchtext;
         public string SearchText
@@ -360,20 +359,14 @@ namespace BuildMaterials.ViewModels
                     }
                     if (result)
                     {
-                        MessageBox.Show("Печать успешно заверешена!", "Печать", MessageBoxButton.OK, MessageBoxImage.Information);
+                        System.Windows.MessageBox.Show("Печать успешно заверешена!", "Печать", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Печать заверешена с ошибкой: " + ex.Message, "Печать", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("Печать заверешена с ошибкой: " + ex.Message, "Печать", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
-        }
-
-        private void SaveChanges()
-        {
-            App.DBContext.SaveChanges();
-            IsSaved = true;
         }
 
         private void OpenAboutProgram()
@@ -400,7 +393,6 @@ namespace BuildMaterials.ViewModels
                 selectedTab = tabName;
                 SearchText = string.Empty;
             }
-            App.DBContext.SaveChangesAsync();
         }
 
         private void DeleteRow()
@@ -487,7 +479,6 @@ namespace BuildMaterials.ViewModels
                             }
                             Account buf = App.DBContext.Accounts.ElementAt(SelectedRowIndex);
                             App.DBContext.Accounts.Remove(buf);
-                            App.DBContext.SaveChanges();
                             AccountsList = App.DBContext.Accounts.ToList();
                             break;
                         }
@@ -497,9 +488,8 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Contract buf = App.DBContext.Contracts.Local.ElementAt(SelectedRowIndex);
+                            Contract buf = App.DBContext.Contracts.ElementAt(SelectedRowIndex);
                             App.DBContext.Contracts.Remove(buf);
-                            App.DBContext.SaveChanges();
                             ContractsList = App.DBContext.Contracts.ToList();
                             break;
                         }
@@ -598,11 +588,12 @@ namespace BuildMaterials.ViewModels
             }
         }
 
+        //TODO: удалить это предупреждение либо делать резерную копию при запуске или как-то по другому
         public void SaveChanges(CancelEventArgs e)
         {
             if (IsSaved.Equals(false))
             {
-                MessageBoxResult result = MessageBox.Show("Сохранить внесенные измения перед выходом?", savedTitle, MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                MessageBoxResult result = System.Windows.MessageBox.Show("Сохранить внесенные измения перед выходом?", savedTitle, System.Windows.MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
                 switch (result)
                 {
                     case MessageBoxResult.Cancel:
@@ -612,7 +603,7 @@ namespace BuildMaterials.ViewModels
                         }
                     case MessageBoxResult.Yes:
                         {
-                            App.DBContext.SaveChanges();
+                            //сохранение изменений
                             break;
                         }
                 }
