@@ -2,7 +2,6 @@
 using BuildMaterials.Models;
 using BuildMaterials.Other;
 using BuildMaterials.Views;
-using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -109,16 +108,16 @@ namespace BuildMaterials.ViewModels
                 {
                     using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
                     {
-                        MySqlDataReader reader = _command.ExecuteReaderAsync().Result;
-                        while (reader.Read())
-                        {
-                            fio.Add(new EmployeeFIO()
+                        using (MySqlDataReader reader = _command.ExecuteReader())
+                            while (reader.Read())
                             {
-                                Name = reader.GetString(0),
-                                Surname = reader.GetString(1),
-                                Pathnetic = reader.GetString(2)
-                            });
-                        }
+                                fio.Add(new EmployeeFIO()
+                                {
+                                    Name = reader.GetString(0),
+                                    Surname = reader.GetString(1),
+                                    Pathnetic = reader.GetString(2)
+                                });
+                            }
                     }
                 }
                 return fio.ToArray();
@@ -126,7 +125,7 @@ namespace BuildMaterials.ViewModels
         }
 
         public ICommand AboutProgrammCommand => new RelayCommand((sender) => OpenAboutProgram());
-        public ICommand ExitCommand => new RelayCommand((sener) => Application.Current.MainWindow.Close());
+        public ICommand ExitCommand => new RelayCommand((sener) => System.Windows.Application.Current.MainWindow.Close());
         public ICommand SettingsCommand => new RelayCommand((sener) => OpenSettings());
         public ICommand AddRowCommand => new RelayCommand((sender) => AddRow());
         public ICommand DeleteRowCommand => new RelayCommand((sender) => DeleteRow());
@@ -159,11 +158,11 @@ namespace BuildMaterials.ViewModels
             {
                 if (value)
                 {
-                    Application.Current.MainWindow.Title = savedTitle;
+                    System.Windows.Application.Current.MainWindow.Title = savedTitle;
                 }
                 else
                 {
-                    Application.Current.MainWindow.Title = unsavedTitle;
+                    System.Windows.Application.Current.MainWindow.Title = unsavedTitle;
                 }
                 isSaved = value;
             }

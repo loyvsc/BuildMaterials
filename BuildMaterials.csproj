@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows7.0</TargetFramework>
+    <TargetFramework>net7.0-windows10.0.18362.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>10.0.18362.0</SupportedOSPlatformVersion>
     <ApplicationIcon>img\icon.ico</ApplicationIcon>
     <UseWindowsForms>True</UseWindowsForms>
     <Platforms>AnyCPU;x64;x86</Platforms>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,6 @@
 
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="8.1.0" />
-    <PackageReference Include="MySqlConnector" Version="2.2.7" />
   </ItemGroup>
 
   <ItemGroup>

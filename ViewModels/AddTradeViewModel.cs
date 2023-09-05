@@ -1,7 +1,5 @@
 ﻿using BuildMaterials.BD;
 using BuildMaterials.Models;
-using MySqlConnector;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -15,6 +13,12 @@ namespace BuildMaterials.ViewModels
         public string? Pathnetic;
 
         public EmployeeFIO() { }
+        public EmployeeFIO(string? surname, string? name = "", string? pathnetic = "")
+        {
+            Surname = surname;
+            Name = name;
+            Pathnetic = pathnetic;
+        }
 
         public override string ToString()
         {
@@ -34,13 +38,15 @@ namespace BuildMaterials.ViewModels
                 List<string> fio = new List<string>(32);
                 using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
                 {
-                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
+                    _connection.Open();
+                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, Pathnetic FROM Employees;", _connection))
                     {
-                        MySqlDataReader reader = _command.ExecuteReaderAsync().Result;
-                        while (reader.Read())
-                        {
-                            fio.Add($"{reader.GetString(0)} {reader.GetString(1)} {reader.GetString(2)}");
-                        }
+                        using (MySqlDataReader reader = _command.ExecuteReader())
+                            while (reader.Read())
+                            {
+                                fio.Add($"{reader.GetString(0)} {reader.GetString(1)} {reader.GetString(2)}");
+                            }
+                        _connection.Close();
                     }
                 }
                 return fio.ToArray();
@@ -58,10 +64,10 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged("SelectedMaterial");
             }
         }
-        private Models.Material _selMat;
+        private Models.Material _selMat = null!;
 
         private readonly Window _window = null!;
-        public string SelectedFIO { get; set; }
+        public string SelectedFIO { get; set; } = string.Empty;
 
         public AddTradeViewModel()
         {
@@ -82,7 +88,7 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged("MaxCountValue");
             }
         }
-        private string _maxCountValue;
+        private string _maxCountValue = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -90,7 +96,7 @@ namespace BuildMaterials.ViewModels
         {
             if (Trade.Count > _selMat.Count)
             {
-                MessageBox.Show("Продано больше, чем в наличии!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("Продано больше, чем в наличии!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             Trade.SellerFio = SelectedFIO;
@@ -102,7 +108,7 @@ namespace BuildMaterials.ViewModels
                 _window.DialogResult = true;
                 return;
             }
-            MessageBox.Show("Не вся информация была введена!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show("Не вся информация была введена!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         public void OnPropertyChanged(string propName)

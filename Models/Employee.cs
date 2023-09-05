@@ -11,14 +11,16 @@ namespace BuildMaterials.Models
         public string? Position { get; set; }
         public string? PhoneNumber { get; set; }
         public int Password { get; set; }
+        public bool FinResponsible { get; set; } = false;
         public int AccessLevel { get; set; }
 
         public string AccessLevelInString => App.DBContext.AccessLevel[AccessLevel];
 
         public Employee() { }
 
-        public Employee(string name, string surName, string pathnetic, string position, string phoneNumber, int password = 0, int accessLevel = 3)
+        public Employee(string name, string surName, string pathnetic, string position, string phoneNumber, int password = 0, int accessLevel = 3, bool finResp = false)
         {
+            FinResponsible = finResp;
             Name = name;
             SurName = surName;
             Pathnetic = pathnetic;

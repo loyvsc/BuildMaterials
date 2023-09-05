@@ -7,8 +7,8 @@ namespace BuildMaterials.ViewModels
     {
         public Models.Customer Customer { get; set; }
 
-        public ICommand CancelCommand { get => new RelayCommand((sender) => _window.Close()); }
-        public ICommand AddCommand { get => new RelayCommand((sender) => AddMaterial()); }
+        public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
+        public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
         private readonly Window _window = null!;
 
@@ -30,7 +30,7 @@ namespace BuildMaterials.ViewModels
                 _window.DialogResult = true;
                 return;
             }
-            MessageBox.Show("Не вся информация была введена!", "Новый заказчик", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show("Не вся информация была введена!", "Новый заказчик", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }

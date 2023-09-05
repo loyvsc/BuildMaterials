@@ -4,6 +4,35 @@ using System.Collections.Generic;
 
 namespace BuildMaterials.Models
 {
+    public class MaterialResponse : ITable
+    {
+        public int ID { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+        public string CountUnits { get; set; } = string.Empty;
+        public float BalanceAtStart { get; set; }
+        public float Prihod { get; set; }
+        public float Rashod { get; set; }
+        public float BalanceAtEnd { get; set; }
+        public int FinResponseEmployeeID { get; set; }
+        public Employee FinReponseEmployee => App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
+
+        public MaterialResponse() { }
+        public MaterialResponse(int iD, string countUnits, float balStart, float prihod, float rashod, float balEnd)
+        {
+            ID = iD;
+            CountUnits = countUnits;
+            BalanceAtStart = balStart;
+            BalanceAtEnd = balEnd;
+            Prihod = prihod;
+            Rashod = rashod;
+            BalanceAtEnd = balEnd;
+        }
+
+        public bool IsValid => BalanceAtStart >= 0 &&
+             Prihod >= 0 && Rashod >= 0;
+    }
+
     public class Customer : ITable
     {
         public int ID { get; set; }
@@ -49,7 +78,7 @@ namespace BuildMaterials.Models
 
         public static explicit operator Customer(Provider v)
         {
-            return new Customer(0,v.CompanyName,v.Adress,v.CompanyPerson,v.CompanyPhone,v.Bank,v.BankProp,v.UNP);
+            return new Customer(0, v.CompanyName, v.Adress, v.CompanyPerson, v.CompanyPhone, v.Bank, v.BankProp, v.UNP);
         }
 
         public static explicit operator Customer(List<Provider> v)

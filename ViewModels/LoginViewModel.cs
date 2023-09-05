@@ -1,7 +1,6 @@
 ﻿using BuildMaterials.BD;
 using BuildMaterials.Models;
 using BuildMaterials.Views;
-using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,16 +34,16 @@ namespace BuildMaterials.ViewModels
                 using (MySqlCommand _command = new MySqlCommand("SELECT Position, Password, AccessLevel FROM Employees;", _connection))
                 {
                     _connection.Open();
-                    MySqlDataReader reader = _command.ExecuteReaderAsync().Result;
-                    while (reader.Read())
-                    {
-                        employees.Add(new Employee()
+                    using (MySqlDataReader reader = _command.ExecuteReader())
+                        while (reader.Read())
                         {
-                            Position = reader.GetString(0),
-                            Password = reader.GetInt32(1),
-                            AccessLevel = reader.GetInt32(2)
-                        });
-                    }
+                            employees.Add(new Employee()
+                            {
+                                Position = reader.GetString(0),
+                                Password = reader.GetInt32(1),
+                                AccessLevel = reader.GetInt32(2)
+                            });
+                        }
                     _connection.Close();
                 }
             }
@@ -87,7 +86,7 @@ namespace BuildMaterials.ViewModels
                 {
                     MainWindow mainWindow = new MainWindow(findedEmployee);
                     mainWindow.Show();
-                    Application.Current.MainWindow = mainWindow;
+                    System.Windows.Application.Current.MainWindow = mainWindow;
                     _window?.Close();
                 }
                 else
@@ -97,7 +96,7 @@ namespace BuildMaterials.ViewModels
             }
             catch (AutorizeException aEx)
             {
-                MessageBox.Show(aEx.Message, "Авторизация", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                System.Windows.MessageBox.Show(aEx.Message, "Авторизация", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
 

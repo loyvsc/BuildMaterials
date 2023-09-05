@@ -32,7 +32,7 @@ namespace BuildMaterials.ViewModels
             }
             else
             {
-                MessageBox.Show("Наименование организации не введено!", "Настройки", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("Наименование организации не введено!", "Настройки", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

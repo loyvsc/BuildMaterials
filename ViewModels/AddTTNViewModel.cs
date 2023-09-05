@@ -1,7 +1,5 @@
 ﻿using BuildMaterials.BD;
 using BuildMaterials.Models;
-using MySqlConnector;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 
@@ -9,7 +7,12 @@ namespace BuildMaterials.ViewModels
 {
     public static class ListExtensions
     {
-        static public void AddProvider(this List<Customer> customers, List<Provider> providers)
+        public static void AddProvider(this List<Customer> customers, List<Provider> providers)
+        {
+            System.Threading.Tasks.Parallel.For(0, providers.Count, x => customers.Add((Customer)providers[x]));
+        }
+
+        public static void AddProviderOld(this List<Customer> customers, List<Provider> providers)
         {
             for (int i = 0; i < providers.Count; i++)
             {
@@ -17,12 +20,13 @@ namespace BuildMaterials.ViewModels
             }
         }
     }
+
     public class AddTTNViewModel
     {
         public Models.TTN TTN { get; set; }
 
-        public ICommand CancelCommand { get => new RelayCommand((sender) => _window.Close()); }
-        public ICommand AddCommand { get => new RelayCommand((sender) => AddMaterial()); }
+        public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
+        public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
         private readonly Window _window = null!;
         public List<string?> MaterialNames
@@ -48,13 +52,12 @@ namespace BuildMaterials.ViewModels
 
         }
 
-        public readonly Settings Settings;
+        public readonly Settings Settings = new Settings();
         public List<Customer>? CustomersList { get; set; }
 
         public AddTTNViewModel()
         {
             TTN = new TTN();
-            Settings = new Settings();
         }
 
         public AddTTNViewModel(Window window) : this()
@@ -77,7 +80,7 @@ namespace BuildMaterials.ViewModels
                 _window.DialogResult = true;
                 return;
             }
-            MessageBox.Show("Не вся информация была введена!", "Новый ТТН", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show("Не вся информация была введена!", "Новый ТТН", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }
