@@ -1,8 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BuildMaterials.BD;
+using BuildMaterials.Models;
+using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace BuildMaterials.ViewModels
 {
@@ -25,7 +30,25 @@ namespace BuildMaterials.ViewModels
         public Models.Trade Trade { get; set; }
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
-        public string[] SellersFIO => App.DBContext.Employees.AsNoTracking().Select(x => $"{x.Name} {x.SurName} {x.Pathnetic}").ToArrayAsync().Result;
+        public string[] SellersFIO
+        {
+            get
+            {
+                List<string> fio = new List<string>(32);
+                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+                {
+                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
+                    {
+                        MySqlDataReader reader = _command.ExecuteReaderAsync().Result;                        
+                        while (reader.Read())
+                        {
+                            fio.Add($"{reader.GetString(0)} {reader.GetString(1)} {reader.GetString(2)}");
+                        }
+                    }
+                }
+                return fio.ToArray();
+            }
+        }
         public Models.Material[] Materials => App.DBContext.Materials.Select("SELECT ID,Name,Count FROM Materials").ToArray();
 
         public Models.Material SelectedMaterial

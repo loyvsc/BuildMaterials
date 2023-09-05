@@ -1,9 +1,10 @@
-﻿using BuildMaterials.Models;
+﻿using BuildMaterials.BD;
+using BuildMaterials.Models;
 using BuildMaterials.Views;
-using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -28,7 +29,26 @@ namespace BuildMaterials.ViewModels
 
         public LoginViewModel()
         {
-            Employees = App.DBContext.Employees.AsNoTracking().Select(x => new Employee() { Position = x.Position, Password = x.Password, AccessLevel = x.AccessLevel }).ToArrayAsync().Result;
+            List<Employee> employees = new List<Employee>(32);
+            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+            {
+                using (MySqlCommand _command = new MySqlCommand("SELECT Position, Password, AccessLevel FROM Employees;", _connection))
+                {
+                    _connection.Open();
+                    MySqlDataReader reader = _command.ExecuteReaderAsync().Result;
+                    while (reader.Read())
+                    {
+                        employees.Add(new Employee()
+                        {
+                            Position = reader.GetString(0),
+                            Password = reader.GetInt32(1),
+                            AccessLevel = reader.GetInt32(2)
+                        });
+                    }
+                    _connection.Close();
+                }
+            }
+            Employees = employees.ToArray();
         }
 
         public LoginViewModel(Window parentWindow) : this()

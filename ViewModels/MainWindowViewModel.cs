@@ -1,14 +1,12 @@
-﻿using BuildMaterials.Models;
+﻿using BuildMaterials.BD;
+using BuildMaterials.Models;
 using BuildMaterials.Other;
 using BuildMaterials.Views;
-using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -103,7 +101,30 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        public EmployeeFIO[] SellersFIO => App.DBContext.Employees.Local.Select(x => new EmployeeFIO() { Name = x.Name, Surname = x.SurName, Pathnetic = x.Pathnetic }).ToArray();
+        public EmployeeFIO[] SellersFIO
+        {
+            get
+            {
+                List<EmployeeFIO> fio = new List<EmployeeFIO>(32);
+                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+                {
+                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
+                    {
+                        MySqlDataReader reader = _command.ExecuteReaderAsync().Result;
+                        while (reader.Read())
+                        {
+                            fio.Add(new EmployeeFIO()
+                            {
+                                Name = reader.GetString(0),
+                                Surname = reader.GetString(1),
+                                Pathnetic = reader.GetString(2)
+                            });
+                        }
+                    }
+                }
+                return fio.ToArray();
+            }
+        }
 
         public ICommand AboutProgrammCommand => new RelayCommand((sender) => OpenAboutProgram());
         public ICommand ExitCommand => new RelayCommand((sener) => Application.Current.MainWindow.Close());
@@ -210,7 +231,7 @@ namespace BuildMaterials.ViewModels
                                 EmployeesList = App.DBContext.Employees.ToList();
                                 break;
                             }
-                            EmployeesList = App.DBContext.EmployeeSearch(text);
+                            EmployeesList = App.DBContext.Employees.Search(text);
                             break;
                         }
                     case "customersTab":
@@ -220,7 +241,7 @@ namespace BuildMaterials.ViewModels
                                 CustomersList = App.DBContext.Customers.ToList();
                                 break;
                             }
-                           // CustomersList = CreateSearchQuery<Customer>(App.DBContext.Customers, text).ToList();
+                            // CustomersList = CreateSearchQuery<Customer>(App.DBContext.Customers, text).ToList();
                             break;
                         }
                     case "postavTab":
@@ -284,7 +305,7 @@ namespace BuildMaterials.ViewModels
         private void PrintContract()
         {
             if (SelectedRowIndex.Equals(-1))
-            {                
+            {
                 return;
             }
             using (PrinterConnect print = new PrinterConnect())
@@ -344,7 +365,7 @@ namespace BuildMaterials.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Печать заверешена с ошибкой: "+ex.Message,"Печать",MessageBoxButton.OK,MessageBoxImage.Error);
+                    MessageBox.Show("Печать заверешена с ошибкой: " + ex.Message, "Печать", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -400,7 +421,6 @@ namespace BuildMaterials.ViewModels
                             }
                             Material buf = App.DBContext.Materials.ElementAt(SelectedRowIndex);
                             App.DBContext.Materials.Remove(buf);
-                            App.DBContext.SaveChanges();
                             MaterialsList = App.DBContext.Materials.ToList();
                             break;
                         }
@@ -410,9 +430,8 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Employee buf = App.DBContext.Employees.Local.ElementAt(SelectedRowIndex);
+                            Employee buf = App.DBContext.Employees.ElementAt(SelectedRowIndex);
                             App.DBContext.Employees.Remove(buf);
-                            App.DBContext.SaveChanges();
                             EmployeesList = App.DBContext.Employees.ToList();
                             break;
                         }
@@ -422,9 +441,8 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Customer buf = App.DBContext.Customers.Local.ElementAt(SelectedRowIndex);
+                            Customer buf = App.DBContext.Customers.ElementAt(SelectedRowIndex);
                             App.DBContext.Customers.Remove(buf);
-                            App.DBContext.SaveChanges();
                             CustomersList = App.DBContext.Customers.ToList();
                             break;
                         }
@@ -434,9 +452,8 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Provider buf = App.DBContext.Providers.Local.ElementAt(SelectedRowIndex);
+                            Provider buf = App.DBContext.Providers.ElementAt(SelectedRowIndex);
                             App.DBContext.Providers.Remove(buf);
-                            App.DBContext.SaveChanges();
                             ProvidersList = App.DBContext.Providers.ToList();
                             break;
                         }
@@ -446,9 +463,8 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Trade buf = App.DBContext.Trades.Local.ElementAt(SelectedRowIndex);
+                            Trade buf = App.DBContext.Trades.ElementAt(SelectedRowIndex);
                             App.DBContext.Trades.Remove(buf);
-                            App.DBContext.SaveChanges();
                             TradesList = App.DBContext.Trades.ToList();
                             break;
                         }
@@ -458,9 +474,8 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            TTN buf = App.DBContext.TTNs.Local.ElementAt(SelectedRowIndex);
+                            TTN buf = App.DBContext.TTNs.ElementAt(SelectedRowIndex);
                             App.DBContext.TTNs.Remove(buf);
-                            App.DBContext.SaveChanges();
                             TTNList = App.DBContext.TTNs.ToList();
                             break;
                         }
@@ -470,7 +485,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Account buf = App.DBContext.Accounts.Local.ElementAt(SelectedRowIndex);
+                            Account buf = App.DBContext.Accounts.ElementAt(SelectedRowIndex);
                             App.DBContext.Accounts.Remove(buf);
                             App.DBContext.SaveChanges();
                             AccountsList = App.DBContext.Accounts.ToList();

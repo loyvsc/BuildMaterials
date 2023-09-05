@@ -8,7 +8,7 @@
         xmlns:viewmodels="clr-namespace:BuildMaterials.ViewModels"
         xmlns:local="clr-namespace:BuildMaterials.Views"
         mc:Ignorable="d" x:Name="Root"
-        Title="Учет строительных материалов в магазине" MinHeight="450" MinWidth="760" Height="450" Width="760" >
+        Title="АРМ Менеджера Строительной Фирмы" MinHeight="450" MinWidth="760" Height="450" Width="760" >
     <Window.DataContext>
         <viewmodels:MainWindowViewModel x:Name="dc"/>
     </Window.DataContext>
