@@ -30,6 +30,13 @@ namespace BuildMaterials.Models
             AccessLevel = accessLevel;
         }
 
+        public Employee(string position, int password, int accessLevel)
+        {
+            Position = position;
+            Password = password;
+            AccessLevel = accessLevel;
+        }
+
         public override string ToString()
         {
             return $"Сотрудник #{ID}\nФ.И.О.: {SurName} {Name} {Pathnetic}\nДолжность: {Position}\nНомер телефона: {PhoneNumber}";

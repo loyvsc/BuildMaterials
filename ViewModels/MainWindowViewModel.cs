@@ -2,8 +2,6 @@
 using BuildMaterials.Models;
 using BuildMaterials.Other;
 using BuildMaterials.Views;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,14 +13,14 @@ namespace BuildMaterials.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private List<Material> materials;
-        private List<Employee> employees;
-        private List<Customer> customers;
-        private List<Provider> providers;
-        private List<Trade> trades;
-        private List<TTN> ttns;
-        private List<Account> accounts;
-        private List<Contract> contracts;
+        private List<Material> materials = null!;
+        private List<Employee> employees = null!;
+        private List<Customer> customers = null!;
+        private List<Provider> providers = null!;
+        private List<Trade> trades = null!;
+        private List<TTN> ttns = null!;
+        private List<Account> accounts = null!;
+        private List<Contract> contracts = null!;
 
         public bool CanUserEditEmployeeConf => CurrentEmployee.AccessLevel.Equals(3);
 
@@ -106,19 +104,16 @@ namespace BuildMaterials.ViewModels
                 List<EmployeeFIO> fio = new List<EmployeeFIO>(32);
                 using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
                 {
+                    _connection.OpenAsync().Wait();
                     using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
                     {
                         using (MySqlDataReader reader = _command.ExecuteReader())
                             while (reader.Read())
                             {
-                                fio.Add(new EmployeeFIO()
-                                {
-                                    Name = reader.GetString(0),
-                                    Surname = reader.GetString(1),
-                                    Pathnetic = reader.GetString(2)
-                                });
+                                fio.Add(new EmployeeFIO(reader.GetString(1), reader.GetString(0), reader.GetString(2)));
                             }
                     }
+                    _connection.CloseAsync().Wait();
                 }
                 return fio.ToArray();
             }
@@ -132,7 +127,7 @@ namespace BuildMaterials.ViewModels
         public ICommand PrintCommand => new RelayCommand((sender) => PrintContract());
         public ICommand SaveChangesCommand => new RelayCommand((sender) => SaveChanges(new CancelEventArgs()));
 
-        private string _searchtext;
+        private string _searchtext = string.Empty;
         public string SearchText
         {
             get => _searchtext;
@@ -150,20 +145,13 @@ namespace BuildMaterials.ViewModels
         public int SelectedRowIndex;
 
         public bool? CanAdd_EditConfidentional => CurrentEmployee.AccessLevel.Equals(3);
-        public Visibility IsConfidentionNotView { get => CurrentEmployee.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible; }
+        public Visibility IsConfidentionNotView => CurrentEmployee.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible;
         public bool IsSaved
         {
             get => isSaved;
             set
             {
-                if (value)
-                {
-                    System.Windows.Application.Current.MainWindow.Title = savedTitle;
-                }
-                else
-                {
-                    System.Windows.Application.Current.MainWindow.Title = unsavedTitle;
-                }
+                System.Windows.Application.Current.MainWindow.Title = value ? savedTitle : unsavedTitle;
                 isSaved = value;
             }
         }
@@ -185,6 +173,8 @@ namespace BuildMaterials.ViewModels
 
         public MainWindowViewModel()
         {
+            savedTitle = App.Current.MainWindow.Title;
+            unsavedTitle = savedTitle + "*";
             CurrentEmployee = new Employee();
             MaterialsList = App.DBContext.Materials.ToList();
             EmployeesList = App.DBContext.Employees.ToList();
@@ -197,8 +187,6 @@ namespace BuildMaterials.ViewModels
 
             IsPrintEnabled = Visibility.Collapsed;
             Settings = new Settings();
-            savedTitle = "Учет строительных материалов в магазине";
-            unsavedTitle = "Учет строительных материалов в магазине*";
         }
 
         public MainWindowViewModel(Employee employee) : this()
@@ -210,86 +198,93 @@ namespace BuildMaterials.ViewModels
         {
             try
             {
-                switch (selectedTab)
+                if (text.Equals(string.Empty))
                 {
-                    case "materialsTab":
-                        {
-                            if (text.Equals(string.Empty))
+                    switch (selectedTab)
+                    {
+                        case "materialsTab":
                             {
                                 MaterialsList = App.DBContext.Materials.ToList();
                                 break;
                             }
+                        case "employersTab":
+                            {
+                                EmployeesList = App.DBContext.Employees.ToList();
+                                break;
+                            }
+                        case "customersTab":
+                            {
+                                CustomersList = App.DBContext.Customers.ToList();
+                                break;
+                            }
+                        case "postavTab":
+                            {
+                                ProvidersList = App.DBContext.Providers.ToList();
+                                break;
+                            }
+                        case "uchetTab":
+                            {
+                                TradesList = App.DBContext.Trades.ToList();
+                                break;
+                            }
+                        case "ttnTab":
+                            {
+                                TTNList = App.DBContext.TTNs.ToList();
+                                break;
+                            }
+                        case "accountTab":
+                            {
+                                AccountsList = App.DBContext.Accounts.ToList();
+                                break;
+                            }
+                        case "contractTab":
+                            {
+                                ContractsList = App.DBContext.Contracts.ToList();
+                                break;
+                            }
+                    }
+                    return;
+                }
+                switch (selectedTab)
+                {
+                    case "materialsTab":
+                        {
                             MaterialsList = App.DBContext.Materials.Search(text);
                             break;
                         }
                     case "employersTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                EmployeesList = App.DBContext.Employees.ToList();
-                                break;
-                            }
                             EmployeesList = App.DBContext.Employees.Search(text);
                             break;
                         }
                     case "customersTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                CustomersList = App.DBContext.Customers.ToList();
-                                break;
-                            }
-                            // CustomersList = CreateSearchQuery<Customer>(App.DBContext.Customers, text).ToList();
+                            CustomersList = App.DBContext.Customers.Search(text);
                             break;
                         }
                     case "postavTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                ProvidersList = App.DBContext.Providers.ToList();
-                                break;
-                            }
-                            //ProvidersList = CreateSearchQuery<Provider>(App.DBContext.Providers, text).ToList();
+                            ProvidersList = App.DBContext.Providers.Search(text);
                             break;
                         }
                     case "uchetTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                TradesList = App.DBContext.Trades.ToList();
-                                break;
-                            }
-                            //TradesList = CreateSearchQuery<Trade>(App.DBContext.Trades, text).ToList();
+                            TradesList = App.DBContext.Trades.Search(text);
                             break;
                         }
                     case "ttnTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                TTNList = App.DBContext.TTNs.ToList();
-                                break;
-                            }
-                            //TTNList = CreateSearchQuery<TTN>(App.DBContext.TTNs, text).ToList();
+                            TTNList = App.DBContext.TTNs.Search(text);
                             break;
                         }
                     case "accountTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                AccountsList = App.DBContext.Accounts.ToList();
-                                break;
-                            }
-                            //AccountsList = CreateSearchQuery<Account>(App.DBContext.Accounts, text).ToList();
+                            AccountsList = App.DBContext.Accounts.Search(text);
                             break;
                         }
                     case "contractTab":
                         {
-                            if (text.Equals(string.Empty))
-                            {
-                                ContractsList = App.DBContext.Contracts.ToList();
-                                break;
-                            }
-                            //ContractsList = CreateSearchQuery<Contract>(App.DBContext.Contracts, text).ToList();
+                            ContractsList = App.DBContext.Contracts.Search(text);
                             break;
                         }
                 }

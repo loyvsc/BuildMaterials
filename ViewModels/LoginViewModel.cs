@@ -33,18 +33,13 @@ namespace BuildMaterials.ViewModels
             {
                 using (MySqlCommand _command = new MySqlCommand("SELECT Position, Password, AccessLevel FROM Employees;", _connection))
                 {
-                    _connection.Open();
+                    _connection.OpenAsync().Wait();
                     using (MySqlDataReader reader = _command.ExecuteReader())
                         while (reader.Read())
                         {
-                            employees.Add(new Employee()
-                            {
-                                Position = reader.GetString(0),
-                                Password = reader.GetInt32(1),
-                                AccessLevel = reader.GetInt32(2)
-                            });
+                            employees.Add(new Employee(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2)));
                         }
-                    _connection.Close();
+                    _connection.CloseAsync().Wait();
                 }
             }
             Employees = employees.ToArray();

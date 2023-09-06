@@ -9,11 +9,6 @@ namespace BuildMaterials.ViewModels
     {
         public static void AddProvider(this List<Customer> customers, List<Provider> providers)
         {
-            System.Threading.Tasks.Parallel.For(0, providers.Count, x => customers.Add((Customer)providers[x]));
-        }
-
-        public static void AddProviderOld(this List<Customer> customers, List<Provider> providers)
-        {
             for (int i = 0; i < providers.Count; i++)
             {
                 customers.Add((Customer)providers[i]);

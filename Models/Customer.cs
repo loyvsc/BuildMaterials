@@ -18,7 +18,7 @@ namespace BuildMaterials.Models
         public Employee FinReponseEmployee => App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
 
         public MaterialResponse() { }
-        public MaterialResponse(int iD, string countUnits, float balStart, float prihod, float rashod, float balEnd)
+        public MaterialResponse(int iD, string name, string countUnits, float balStart, float prihod, float rashod, float balEnd, int finRespId)
         {
             ID = iD;
             CountUnits = countUnits;
@@ -27,6 +27,8 @@ namespace BuildMaterials.Models
             Prihod = prihod;
             Rashod = rashod;
             BalanceAtEnd = balEnd;
+            FinResponseEmployeeID = finRespId;
+            Name = name;
         }
 
         public bool IsValid => BalanceAtStart >= 0 &&
