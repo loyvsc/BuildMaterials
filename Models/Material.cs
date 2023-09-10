@@ -1,48 +1,136 @@
 ﻿using BuildMaterials.BD;
-using System;
 
 namespace BuildMaterials.Models
 {
     public class Material : ITable
     {
+        private readonly bool UseBD;
         public int ID { get; set; }
-        public string? Name { get; set; }
-        public string? Manufacturer { get; set; }
-        public float Price { get; set; }
-        public float Count { get; set; }
-        public string? CountUnits { get; set; }
-        public DateTime EnterDate { get; set; }
-        public float EnterCount { get; set; }
+        public string? Name
+        {
+            get => name;
+            set
+            {
+                name = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET Name = '{value}' WHERE ID = {ID};");
+                }                
+            }
+        }
+        public string? Manufacturer
+        {
+            get => manufacturer;
+            set
+            {
+                manufacturer = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET Manufacturer = '{value}' WHERE ID = {ID};");
+                }                
+            }
+        }
+        public float Price
+        {
+            get => price;
+            set
+            {
+                price = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET Price = '{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+        public float Count
+        {
+            get => count;
+            set
+            {
+                count = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET Count = '{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+        public string? CountUnits
+        {
+            get => countUnits;
+            set
+            {
+                countUnits = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET CountUnits = '{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+        public DateTime EnterDate
+        {
+            get => enterDate;
+            set
+            {
+                enterDate = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET EnterDate = '{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+        public float EnterCount
+        {
+            get => enterCount;
+            set
+            {
+                enterCount = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Materials SET EnterCount = '{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+
+        private string? name;
+        private string? manufacturer;
+        private float price;
+        private float count;
+        private string? countUnits;
+        private DateTime enterDate;
+        private float enterCount;
 
         public string AsString()
         {
-            return $"Материал #{ID}\nНаименование: {Name}\nПроизводитель: {Manufacturer}\nПоступление {EnterDate} в количестве {EnterCount}\nКоличетсво: {Count} {CountUnits}\nЦена: {Price}";
+            return $"Материал #{ID}\nНаименование: {Name}\nПроизводитель: {Manufacturer}\nПоступление {EnterDate.Date.ToShortDateString()} в количестве {EnterCount}\nКоличетсво: {Count} {CountUnits}\nСтоимость: {Price}";
         }
 
         public Material()
         {
-            Name = string.Empty;
+            UseBD = false;
+            name = string.Empty;
             Manufacturer = string.Empty;
+            CountUnits = string.Empty;
             Price = 0;
             Count = 0;
-            CountUnits = string.Empty;
         }
 
         public Material(int id)
         {
+            UseBD = false;
             ID = id;
         }
 
-        public Material(int id, string name, string manufacturer, float price, float count, string countUnits, DateTime enterDate, int enterCount)
+        public Material(int id, string name, string manufacturer, float price, float count, string countUnits, DateTime enterDate, float enterCount)
         {
+            UseBD = true;
             ID = id;
-            Name = name;
-            Manufacturer = manufacturer;
-            Price = price;
-            Count = count;
-            CountUnits = countUnits;
-            EnterDate = enterDate;
-            EnterCount = enterCount;
+            this.name = name;
+            this.manufacturer = manufacturer;
+            this.price = price;
+            this.count = count;
+            this.countUnits = countUnits;
+            this.enterDate = enterDate;
+            this.enterCount = enterCount;
         }
 
         public bool IsValid => Name != string.Empty &&

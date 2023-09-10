@@ -11,8 +11,8 @@ namespace BuildMaterials.Views
 
         public object Data
         {
-            get { return (object)GetValue(DataProperty); }
-            set { SetValue(DataProperty, value); }
+            get => GetValue(DataProperty);
+            set => SetValue(DataProperty, value);
         }
 
         public static readonly DependencyProperty DataProperty =
@@ -23,7 +23,7 @@ namespace BuildMaterials.Views
     {
         public AboutProgramView()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

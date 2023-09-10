@@ -14,10 +14,10 @@ namespace BuildMaterials.Views
             DataContext = new ViewModels.AddTTNViewModel(this);
         }
 
-        public AddTTNView(List<Customer> customers, List<Provider> providers)
+        public AddTTNView(List<Provider> providers)
         {
             InitializeComponent();
-            DataContext = new ViewModels.AddTTNViewModel(this, customers, providers);
+            DataContext = new ViewModels.AddTTNViewModel(this, providers);
         }
     }
 }

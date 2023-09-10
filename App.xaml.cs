@@ -1,5 +1,4 @@
-﻿using BuildMaterials.BD;
-using System.Windows;
+﻿using System.Windows;
 
 namespace BuildMaterials
 {

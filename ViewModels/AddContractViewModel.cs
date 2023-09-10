@@ -1,6 +1,5 @@
 ﻿using BuildMaterials.BD;
 using BuildMaterials.Models;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 
@@ -25,7 +24,7 @@ namespace BuildMaterials.ViewModels
                     _connection.Open();
                     using (MySqlCommand command = new MySqlCommand("SELECT Name FROM Materials", _connection))
                     {
-                        using (MySqlDataReader reader = command.ExecuteReader())
+                        using (MySqlDataReader reader = command.ExecuteMySqlReaderAsync())
                             while (reader.Read())
                             {
                                 list.Add(reader.GetString(0));
@@ -48,7 +47,7 @@ namespace BuildMaterials.ViewModels
                     using (MySqlCommand _command = new MySqlCommand
                         ("SELECT CompanyName, Adress FROM customers union SELECT CompanyName, Adress FROM providers;", _connection))
                     {
-                        using (MySqlDataReader reader = _command.ExecuteReader())
+                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                             while (reader.Read())
                             {
                                 customers.Add(new Customer() { CompanyName = reader.GetString(0), Adress = reader.GetString(1) });
@@ -68,14 +67,16 @@ namespace BuildMaterials.ViewModels
                 List<string> fio = new List<string>(32);
                 using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
                 {
+                    _connection.OpenAsync().Wait();
                     using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
                     {
-                        using (MySqlDataReader reader = _command.ExecuteReader())
+                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                             while (reader.Read())
                             {
                                 fio.Add($"{reader.GetString(0)} {reader.GetString(1)} {reader.GetString(2)}");
                             }
                     }
+                    _connection.CloseAsync().Wait();
                 }
                 return fio.ToArray();
             }

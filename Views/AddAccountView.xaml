@@ -17,6 +17,8 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" Margin="5,5,5,5">
+            <TextBlock Margin="0,5,0,5">Дата</TextBlock>
+            <DatePicker SelectedDate="{Binding Account.Date}"/>
             <TextBlock Margin="0,5,0,5">Продавец</TextBlock>
             <ComboBox ItemsSource="{Binding EmployeeNames}" SelectedValue="{Binding Account.Seller}"/>
             <TextBlock Margin="0,5,0,5">Грузоотправитель</TextBlock>
@@ -42,16 +44,13 @@
             <TextBox Text="{Binding Account.Count}"/>
             <TextBlock Margin="0,5,0,5">Ед. измерения</TextBlock>
             <TextBox Text="{Binding Account.CountUnits}"/>
-            <TextBlock Margin="0,5,0,5">Цена</TextBlock>
+            <TextBlock Margin="0,5,0,5">Стоимость за единицу</TextBlock>
             <TextBox Text="{Binding Account.Price}"/>
-            <TextBlock Margin="0,5,0,5">Сумма</TextBlock>
-            <TextBox Text="{Binding Account.Summ}"/>
-            <TextBlock Margin="0,5,0,5">Налогагая ставка</TextBlock>
+            <TextBlock Margin="0,5,0,5">Налогагая ставка (%,0-100)</TextBlock>
             <TextBox Text="{Binding Account.Tax}"/>
-            <TextBlock Margin="0,5,0,5">Сумма налога</TextBlock>
-            <TextBox Text="{Binding Account.TaxSumm}"/>
-            <TextBlock Margin="0,5,0,5">Дата</TextBlock>
-            <DatePicker SelectedDate="{Binding Account.Date}"/>
+            <TextBlock Margin="0,5,0,0">Сумма: <TextBlock Text="{Binding Account.Summ}"/></TextBlock>
+            <TextBlock Margin="0,5,0,0">Сумма налога: <TextBlock Text="{Binding Account.TaxSumm}"/></TextBlock>
+            <TextBlock Margin="0,5,0,0" Text="{Binding Account.FinalSummAtString}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
             <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding AddCommand}">Добавить</Button>

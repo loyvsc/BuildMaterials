@@ -1,4 +1,5 @@
 ﻿using BuildMaterials.Models;
+using BuildMaterials.ViewModels;
 
 namespace BuildMaterials.BD
 {
@@ -29,24 +30,24 @@ namespace BuildMaterials.BD
         public AccountsTable Accounts { get; set; } = null!;
         public ContractsTable Contracts { get; set; } = null!;
         public MaterialResponsesTable MaterialResponse { get; set; } = null!;
-        public string[] AccessLevel => new string[4] { "Минимальный", "Низкий", "Средний", "Максимальный" };
+        public readonly string[] AccessLevel = new string[4] { "Минимальный", "Низкий", "Средний", "Максимальный" };
 
         public ApplicationContext()
         {
             InitializeDatabase();
             if (Employees?.Count() == 0)
             {
-                Employees.Add(new Employee("Имя", "Фамилия", "Отчество", "Директор", "+375259991234", 0));
+                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", 0, 3, false));
             }
         }
 
-        private void InitializeDatabase()
+        public void InitializeDatabase()
         {
-            _createDatabase();
-            _initTables();
+            CreateDatabase();
+            InitTables();
         }
 
-        private void _initTables()
+        private void InitTables()
         {
             Employees = new EmployeesTable();
             Customers = new CustomersTable();
@@ -59,7 +60,7 @@ namespace BuildMaterials.BD
             MaterialResponse = new MaterialResponsesTable();
         }
 
-        private void _createDatabase()
+        private void CreateDatabase()
         {
             using (MySqlConnection connection = new MySqlConnection(StaticValues.CreateDatabaseConnectionString))
             {
@@ -84,11 +85,11 @@ namespace BuildMaterials.BD
                 _connection.CloseAsync().Wait();
             }
         }
-
     }
+
     public class MaterialResponsesTable : IDBSetBase<MaterialResponse>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public MaterialResponsesTable()
         {
@@ -104,15 +105,15 @@ namespace BuildMaterials.BD
             _connection.CloseAsync().Wait();
         }
 
-        public BuildMaterials.Models.MaterialResponse ElementAt(int id)
+        public MaterialResponse ElementAt(int id)
         {
-            BuildMaterials.Models.MaterialResponse material = new BuildMaterials.Models.MaterialResponse();
+            MaterialResponse material = new MaterialResponse();
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM materialresponses WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
                         material.ID = reader.GetInt32(0);
@@ -167,18 +168,10 @@ namespace BuildMaterials.BD
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM materialresponses WHERE " +
                     $"Name like '%{text}%';", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        MaterialResponse material = new MaterialResponse();
-                        material.Name = reader.GetString(1);
-                        material.BalanceAtStart = reader.GetFloat(2);
-                        material.BalanceAtStart = reader.GetFloat(3);
-                        material.Prihod = reader.GetFloat(4);
-                        material.Rashod = reader.GetFloat(5);
-                        material.BalanceAtEnd = reader.GetFloat(6);
-                        material.FinResponseEmployeeID = reader.GetInt32(7);
-                        materials.Add(material);
+                        materials.Add(GetMaterialResponse(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -194,17 +187,30 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        MaterialResponse material = new MaterialResponse();
-
-                        materials.Add(material);
+                        materials.Add(GetMaterialResponse(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
             }
             return materials;
+        }
+
+        private MaterialResponse GetMaterialResponse(MySqlDataReader reader)
+        {
+            MaterialResponse material = new MaterialResponse();
+            material.ID = reader.GetInt32(0);
+            material.Name = reader.GetString(1);
+            material.BalanceAtStart = reader.GetFloat(2);
+            material.BalanceAtStart = reader.GetFloat(3);
+            material.Prihod = reader.GetFloat(4);
+            material.Rashod = reader.GetFloat(5);
+            material.BalanceAtEnd = reader.GetFloat(6);
+            material.FinResponseEmployeeID = reader.GetInt32(7);
+            material.UseBD = true;
+            return material;
         }
 
         public List<MaterialResponse> ToList()
@@ -215,19 +221,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand("SELECT * FROM materialresponses;", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        MaterialResponse material = new MaterialResponse();
-                        material.ID = reader.GetInt32(0);
-                        material.Name = reader.GetString(1);
-                        material.BalanceAtStart = reader.GetFloat(2);
-                        material.BalanceAtStart = reader.GetFloat(3);
-                        material.Prihod = reader.GetFloat(4);
-                        material.Rashod = reader.GetFloat(5);
-                        material.BalanceAtEnd = reader.GetFloat(6);
-                        material.FinResponseEmployeeID = reader.GetInt32(7);
-                        materials.Add(material);
+                        materials.Add(GetMaterialResponse(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -235,10 +232,9 @@ namespace BuildMaterials.BD
             return materials;
         }
     }
-
     public class MaterialsTable : IDBSetBase<Material>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public MaterialsTable()
         {
@@ -259,17 +255,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Materials WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        material.ID = reader.GetInt32(0);
-                        material.Name = reader.GetString(1);
-                        material.Manufacturer = reader.GetString(2);
-                        material.Price = reader.GetFloat(3);
-                        material.Count = reader.GetFloat(4);
-                        material.CountUnits = reader.GetString(5);
-                        material.EnterDate = reader.GetDateTime(6);
-                        material.EnterCount = reader.GetFloat(7);
+                        return GetMaterial(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -318,20 +307,12 @@ namespace BuildMaterials.BD
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Materials WHERE " +
                     $"CONCAT(name,' ', manufacturer,' ', price,' ',count,' ',enterdate,' ',entercount) like '%{text}%';", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Material employee = new Material()
-                        {
-                            ID = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            Manufacturer = reader.GetString(2),
-                            Price = reader.GetFloat(3),
-                            Count = reader.GetFloat(4),
-                            CountUnits = reader.GetString(5),
-                            EnterDate = reader.GetDateTime(6),
-                            EnterCount = reader.GetFloat(7),
-                        };
+                        Material employee = new Material(reader.GetInt32(0), reader.GetString(1), reader.GetString(2),
+                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6),
+                            reader.GetFloat(7));
                         materials.Add(employee);
                     }
                 }
@@ -348,19 +329,14 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
                         Material material = new Material()
                         {
                             ID = reader.GetInt32(0),
                             Name = reader.GetString(1),
-                            Manufacturer = reader.GetString(2),
-                            Price = reader.GetFloat(3),
-                            Count = reader.GetFloat(4),
-                            CountUnits = reader.GetString(5),
-                            EnterDate = reader.GetDateTime(6),
-                            EnterCount = reader.GetFloat(7),
+                            Count = reader.GetFloat(2),
                         };
                         materials.Add(material);
                     }
@@ -368,6 +344,12 @@ namespace BuildMaterials.BD
                 _connection.CloseAsync().Wait();
             }
             return materials;
+        }
+
+        private Material GetMaterial(MySqlDataReader reader)
+        {
+            return new Material(reader.GetInt32(0), reader.GetString(1), reader.GetString(2),
+                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6), reader.GetFloat(7));
         }
 
         public List<Material> ToList()
@@ -378,21 +360,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand("SELECT * FROM Materials;", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Material employee = new Material()
-                        {
-                            ID = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            Manufacturer = reader.GetString(2),
-                            Price = reader.GetFloat(3),
-                            Count = reader.GetFloat(4),
-                            CountUnits = reader.GetString(5),
-                            EnterDate = reader.GetDateTime(6),
-                            EnterCount = reader.GetFloat(7),
-                        };
-                        materials.Add(employee);
+                        materials.Add(GetMaterial(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -402,7 +373,7 @@ namespace BuildMaterials.BD
     }
     public class EmployeesTable : IDBSetBase<Employee>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public EmployeesTable()
         {
@@ -424,7 +395,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -434,26 +405,24 @@ namespace BuildMaterials.BD
             }
         }
 
-        public BuildMaterials.Models.Employee ElementAt(int id)
+        private Employee GetEmployee(MySqlDataReader reader)
         {
-            Employee employee = new Employee();
+            return new Employee(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
+                reader.GetString(5), reader.GetInt32(6), reader.GetInt32(7), reader.GetBoolean(8));
+        }
+
+        public Employee ElementAt(int id)
+        {
+            Employee employee = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employee WHERE id={id};", _connection))
+                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE id={id};", _connection))
                 {
-                    using (MySqlDataReader reader = command.ExecuteReader())
+                    using (MySqlDataReader reader = command.ExecuteMySqlReaderAsync())
                         while (reader.Read())
                         {
-                            employee.ID = reader.GetInt32(0);
-                            employee.Name = reader.GetString(1);
-                            employee.SurName = reader.GetString(2);
-                            employee.Pathnetic = reader.GetString(3);
-                            employee.Position = reader.GetString(4);
-                            employee.PhoneNumber = reader.GetString(5);
-                            employee.Password = reader.GetInt32(6);
-                            employee.AccessLevel = reader.GetInt32(7);
-                            employee.FinResponsible = reader.GetBoolean(8);
+                            employee = GetEmployee(reader);
                         }
                 }
                 _connection.CloseAsync().Wait();
@@ -503,21 +472,10 @@ namespace BuildMaterials.BD
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE " +
                     $"CONCAT(name,' ', surname,' ', pathnetic,' ',position,' ',phonenumber) like '%{text}%';", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Employee employee = new Employee()
-                        {
-                            ID = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            SurName = reader.GetString(2),
-                            Pathnetic = reader.GetString(3),
-                            Position = reader.GetString(4),
-                            PhoneNumber = reader.GetString(5),
-                            Password = reader.GetInt32(6),
-                            AccessLevel = reader.GetInt32(7)
-                        };
-                        employees.Add(employee);
+                        employees.Add(GetEmployee(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -538,21 +496,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Employee employee = new Employee()
-                        {
-                            ID = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            SurName = reader.GetString(2),
-                            Pathnetic = reader.GetString(3),
-                            Position = reader.GetString(4),
-                            PhoneNumber = reader.GetString(5),
-                            Password = reader.GetInt32(6),
-                            AccessLevel = reader.GetInt32(7)
-                        };
-                        employees.Add(employee);
+                        employees.Add(GetEmployee(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -562,7 +509,7 @@ namespace BuildMaterials.BD
     }
     public class CustomersTable : IDBSetBase<Customer>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public CustomersTable()
         {
@@ -590,7 +537,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -600,25 +547,24 @@ namespace BuildMaterials.BD
             }
         }
 
-        public BuildMaterials.Models.Customer ElementAt(int id)
+        private Customer GetCustomer(MySqlDataReader reader)
         {
-            Customer obj = new Customer();
+            return new Customer(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
+                reader.GetString(5), reader.GetString(6), reader.GetString(7));
+        }
+
+        public Customer ElementAt(int id)
+        {
+            Customer obj = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM customers WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        obj.ID = reader.GetInt32(0);
-                        obj.CompanyName = reader.GetString(1);
-                        obj.Adress = reader.GetString(2);
-                        obj.CompanyPerson = reader.GetString(3);
-                        obj.CompanyPhone = reader.GetString(4);
-                        obj.Bank = reader.GetString(5);
-                        obj.BankProp = reader.GetString(6);
-                        obj.UNP = reader.GetString(7);
+                        obj = GetCustomer(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -660,24 +606,14 @@ namespace BuildMaterials.BD
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE " +
-                    $"CONCAT(name,' ', surname,' ', pathnetic,' ',position,' ',phonenumber) like '%{text}%';", _connection))
+                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM customers WHERE " +
+                    $"CONCAT(CompanyName,' ', Adress,' ', CompanyPerson,' ',CompanyPhone,' '," +
+                    $"Bank,' ',Bankprop,' ', UNP) like '%{text}%';", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Customer customer = new Customer()
-                        {
-                            ID = reader.GetInt32(0),
-                            CompanyName = reader.GetString(1),
-                            Adress = reader.GetString(2),
-                            CompanyPerson = reader.GetString(3),
-                            CompanyPhone = reader.GetString(4),
-                            Bank = reader.GetString(5),
-                            BankProp = reader.GetString(6),
-                            UNP = reader.GetString(7)
-                        };
-                        customers.Add(customer);
+                        customers.Add(GetCustomer(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -698,21 +634,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Customer customer = new Customer()
-                        {
-                            ID = reader.GetInt32(0),
-                            CompanyName = reader.GetString(1),
-                            Adress = reader.GetString(2),
-                            CompanyPerson = reader.GetString(3),
-                            CompanyPhone = reader.GetString(4),
-                            Bank = reader.GetString(5),
-                            BankProp = reader.GetString(6),
-                            UNP = reader.GetString(7)
-                        };
-                        customers.Add(customer);
+                        customers.Add(GetCustomer(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -722,7 +647,7 @@ namespace BuildMaterials.BD
     }
     public class ProvidersTable : IDBSetBase<Provider>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public ProvidersTable()
         {
@@ -750,7 +675,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -760,25 +685,24 @@ namespace BuildMaterials.BD
             }
         }
 
+        private Provider GetProvider(MySqlDataReader reader)
+        {
+            return new Provider(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
+                reader.GetString(5), reader.GetString(6), reader.GetString(7));
+        }
+
         public BuildMaterials.Models.Provider ElementAt(int id)
         {
-            Provider obj = new Provider();
+            Provider obj = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM provider WHERE id={id};", _connection))
+                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM providers WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        obj.ID = reader.GetInt32(0);
-                        obj.CompanyName = reader.GetString(1);
-                        obj.Adress = reader.GetString(2);
-                        obj.CompanyPerson = reader.GetString(3);
-                        obj.CompanyPhone = reader.GetString(4);
-                        obj.Bank = reader.GetString(5);
-                        obj.BankProp = reader.GetString(6);
-                        obj.UNP = reader.GetString(7);
+                        obj = GetProvider(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -807,7 +731,7 @@ namespace BuildMaterials.BD
         public void Remove(int id)
         {
             _connection.OpenAsync().Wait();
-            using (MySqlCommand command = new MySqlCommand($"DELETE FROM provider WHERE id={id};", _connection))
+            using (MySqlCommand command = new MySqlCommand($"DELETE FROM providers WHERE id={id};", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -821,23 +745,12 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM providers WHERE " +
-                    $"CONCAT(name,' ', surname,' ', pathnetic,' ',position,' ',phonenumber) like '%{text}%';", _connection))
+                    $"CONCAT(companyname,' ', adress,' ', companyperson,' ',bank,' ',bankprop,' ', unp) like '%{text}%';", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Provider provider = new Provider()
-                        {
-                            ID = reader.GetInt32(0),
-                            CompanyName = reader.GetString(1),
-                            Adress = reader.GetString(2),
-                            CompanyPerson = reader.GetString(3),
-                            CompanyPhone = reader.GetString(4),
-                            Bank = reader.GetString(5),
-                            BankProp = reader.GetString(6),
-                            UNP = reader.GetString(7)
-                        };
-                        providers.Add(provider);
+                        providers.Add(GetProvider(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -847,7 +760,7 @@ namespace BuildMaterials.BD
 
         public List<Provider> ToList()
         {
-            return Select("SELECT * FROM customers;");
+            return Select("SELECT * FROM providers;");
         }
 
         public List<Provider> Select(string query)
@@ -858,21 +771,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Provider provider = new Provider()
-                        {
-                            ID = reader.GetInt32(0),
-                            CompanyName = reader.GetString(1),
-                            Adress = reader.GetString(2),
-                            CompanyPerson = reader.GetString(3),
-                            CompanyPhone = reader.GetString(4),
-                            Bank = reader.GetString(5),
-                            BankProp = reader.GetString(6),
-                            UNP = reader.GetString(7)
-                        };
-                        providers.Add(provider);
+                        providers.Add(GetProvider(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -882,7 +784,7 @@ namespace BuildMaterials.BD
     }
     public class TradesTable : IDBSetBase<Trade>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public TradesTable()
         {
@@ -909,7 +811,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -919,23 +821,23 @@ namespace BuildMaterials.BD
             }
         }
 
+        private Trade GetTrade(MySqlDataReader reader)
+        {
+            return new Trade(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2), reader.GetString(3), reader.GetFloat(4), reader.GetFloat(5));
+        }
+
         public BuildMaterials.Models.Trade ElementAt(int id)
         {
-            Trade obj = new Trade();
+            Trade obj = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM trades WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        obj.ID = reader.GetInt32(0);
-                        obj.Date = reader.GetDateTime(1);
-                        obj.SellerFio = reader.GetString(2);
-                        obj.MaterialName = reader.GetString(3);
-                        obj.Count = reader.GetFloat(4);
-                        obj.Price = reader.GetFloat(5);
+                        obj = GetTrade(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -980,19 +882,10 @@ namespace BuildMaterials.BD
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM trades" +
                     $" WHERE CONCAT(SellerFio,' ', MaterialName) like '%{text}%';)", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Trade trade = new Trade()
-                        {
-                            ID = reader.GetInt32(0),
-                            Date = reader.GetDateTime(1),
-                            SellerFio = reader.GetString(2),
-                            MaterialName = reader.GetString(3),
-                            Count = reader.GetFloat(4),
-                            Price = reader.GetFloat(5),
-                        };
-                        trades.Add(trade);
+                        trades.Add(GetTrade(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1013,19 +906,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Trade trade = new Trade()
-                        {
-                            ID = reader.GetInt32(0),
-                            Date = reader.GetDateTime(1),
-                            SellerFio = reader.GetString(2),
-                            MaterialName = reader.GetString(3),
-                            Count = reader.GetFloat(4),
-                            Price = reader.GetFloat(5),
-                        };
-                        trades.Add(trade);
+                        trades.Add(GetTrade(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1035,7 +919,7 @@ namespace BuildMaterials.BD
     }
     public class TTNSTable : IDBSetBase<TTN>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public TTNSTable()
         {
@@ -1053,7 +937,7 @@ namespace BuildMaterials.BD
                 "Payer varchar(100) not null, count float not null," +
                 "price float, MaterialName varchar(100) not null," +
                 "CountUnits varchar(20), weight float not null," +
-                "summ float not null, date date not null, PRIMARY KEY (ID));", _connection))
+                "date date not null, PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -1066,7 +950,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -1076,28 +960,24 @@ namespace BuildMaterials.BD
             }
         }
 
-        public BuildMaterials.Models.TTN ElementAt(int id)
+        private TTN GetTTN(MySqlDataReader reader)
         {
-            TTN obj = new TTN();
+            return new TTN(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetFloat(4),
+            reader.GetFloat(5), reader.GetString(6), reader.GetString(7), reader.GetFloat(8), reader.GetDateTime(9));
+        }
+
+        public TTN ElementAt(int id)
+        {
+            TTN obj = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM ttns WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        obj.ID = reader.GetInt32(0);
-                        obj.Shipper = reader.GetString(1);
-                        obj.Consignee = reader.GetString(2);
-                        obj.Payer = reader.GetString(3);
-                        obj.Count = reader.GetFloat(4);
-                        obj.Price = reader.GetFloat(5);
-                        obj.MaterialName = reader.GetString(6);
-                        obj.CountUnits = reader.GetString(7);
-                        obj.Weight = reader.GetFloat(8);
-                        obj.Summ = reader.GetFloat(9);
-                        obj.Date = reader.GetDateTime(10);
+                        obj = GetTTN(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1108,9 +988,10 @@ namespace BuildMaterials.BD
         public void Add(TTN obj)
         {
             using (MySqlCommand command = new MySqlCommand("INSERT INTO ttns " +
-                "(shpper, Consignee, Payer, Count, Price,Weight,Summ, Date) VALUES" +
+                "(shipper, Consignee, Payer, Count, Price,Weight, Date, MaterialName,CountUnits) VALUES" +
                 $"('{obj.Shipper}','{obj.Consignee}'," +
-                $"'{obj.Payer}',{obj.Count},{obj.Price},{obj.Weight},{obj.Summ},'{obj.DateInString}');", _connection))
+                $"'{obj.Payer}',{obj.Count},{obj.Price},{obj.Weight},'{obj.Date!.Value.Year}-{obj.Date!.Value.Month}-{obj.Date!.Value.Day}'," +
+                $"'{obj.MaterialName}','{obj.CountUnits}');", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();
@@ -1142,24 +1023,10 @@ namespace BuildMaterials.BD
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM ttns" +
                     $" WHERE CONCAT(Shipper,' ', Consignee,' ',Payer,' ',MaterialName) like '%{text}%';)", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        TTN obj = new TTN()
-                        {
-                            ID = reader.GetInt32(0),
-                            Shipper = reader.GetString(1),
-                            Consignee = reader.GetString(2),
-                            Payer = reader.GetString(3),
-                            Count = reader.GetFloat(4),
-                            Price = reader.GetFloat(5),
-                            MaterialName = reader.GetString(6),
-                            CountUnits = reader.GetString(7),
-                            Weight = reader.GetFloat(8),
-                            Summ = reader.GetFloat(9),
-                            Date = reader.GetDateTime(10)
-                        };
-                        ttns.Add(obj);
+                        ttns.Add(GetTTN(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1180,24 +1047,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        TTN obj = new TTN()
-                        {
-                            ID = reader.GetInt32(0),
-                            Shipper = reader.GetString(1),
-                            Consignee = reader.GetString(2),
-                            Payer = reader.GetString(3),
-                            Count = reader.GetFloat(4),
-                            Price = reader.GetFloat(5),
-                            MaterialName = reader.GetString(6),
-                            CountUnits = reader.GetString(7),
-                            Weight = reader.GetFloat(8),
-                            Summ = reader.GetFloat(9),
-                            Date = reader.GetDateTime(10)
-                        };
-                        ttns.Add(obj);
+                        ttns.Add(GetTTN(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1207,7 +1060,7 @@ namespace BuildMaterials.BD
     }
     public class AccountsTable : IDBSetBase<Account>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public AccountsTable()
         {
@@ -1225,7 +1078,7 @@ namespace BuildMaterials.BD
                 "ShipperAdress varchar(100) not null, ConsigneeName varchar(50) not null," +
                 "ConsigneeAdress varchar(100) not null, Buyer varchar(100) not null," +
                 "CountUnits varchar(20), Count float not null," +
-                "summ float not null, Price float not null, Tax float not null, TaxSumm float, date date not null," +
+                "Price float not null, Tax float not null, date date not null," +
                 " PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
@@ -1239,7 +1092,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -1249,31 +1102,25 @@ namespace BuildMaterials.BD
             }
         }
 
-        public BuildMaterials.Models.Account ElementAt(int id)
+        private Account GetAccount(MySqlDataReader reader)
         {
-            Account obj = new Account();
+            return new Account(reader.GetInt32(0),reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
+                reader.GetString(5), reader.GetString(6), reader.GetString(7),
+                reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11));
+        }
+
+        public Account ElementAt(int id)
+        {
+            Account obj = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM accounts WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        obj.ID = reader.GetInt32(0);
-                        obj.Seller = reader.GetString(1);
-                        obj.ShipperName = reader.GetString(2);
-                        obj.ShipperAdress = reader.GetString(3);
-                        obj.ConsigneeName = reader.GetString(4);
-                        obj.ConsigneeAdress = reader.GetString(5);
-                        obj.Buyer = reader.GetString(6);
-                        obj.CountUnits = reader.GetString(7);
-                        obj.Count = reader.GetFloat(8);
-                        obj.Price = reader.GetFloat(9);
-                        obj.Summ = reader.GetFloat(10);
-                        obj.Tax = reader.GetFloat(11);
-                        obj.TaxSumm = reader.GetFloat(12);
-                        obj.Date = reader.GetDateTime(13);
+                        obj = GetAccount(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1285,10 +1132,10 @@ namespace BuildMaterials.BD
         {
             using (MySqlCommand command = new MySqlCommand("INSERT INTO accounts " +
                 "(Seller, ShipperName, ShipperAdress, ConsigneeName, ConsigneeAdress," +
-                "Buyer,CountUnits, Count,Price,Summ,Tax,TaxSumm,Date) VALUES" +
+                "Buyer,CountUnits, Count,Price,Tax,Date) VALUES" +
                 $"('{obj.Seller}','{obj.ShipperName}','{obj.ShipperAdress}','{obj.ConsigneeName}'," +
-                $"'{obj.ConsigneeAdress}',{obj.Buyer},{obj.CountUnits},{obj.Count},{obj.Price}," +
-                $"{obj.Summ},{obj.Tax},{obj.TaxSumm},'{obj.DateInString}');", _connection))
+                $"'{obj.ConsigneeAdress}','{obj.Buyer}','{obj.CountUnits}',{obj.Count},{obj.Price}," +
+                $"{obj.Tax},'{obj.Date!.Value.Year}-{obj.Date!.Value.Month}-{obj.Date!.Value.Day}');", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();
@@ -1321,27 +1168,10 @@ namespace BuildMaterials.BD
                     $" WHERE CONCAT(Seller,' ', ShipperName,' ',ShipperAdress,' ',ConsigneeName," +
                     $"' ',ConsigneeAdress,' ',Buyer) like '%{text}%';)", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Account obj = new Account()
-                        {
-                            ID = reader.GetInt32(0),
-                            Seller = reader.GetString(1),
-                            ShipperName = reader.GetString(2),
-                            ShipperAdress = reader.GetString(3),
-                            ConsigneeName = reader.GetString(4),
-                            ConsigneeAdress = reader.GetString(5),
-                            Buyer = reader.GetString(6),
-                            CountUnits = reader.GetString(7),
-                            Count = reader.GetFloat(8),
-                            Price = reader.GetFloat(9),
-                            Summ = reader.GetFloat(10),
-                            Tax = reader.GetFloat(11),
-                            TaxSumm = reader.GetFloat(12),
-                            Date = reader.GetDateTime(13),
-                        };
-                        ttns.Add(obj);
+                        ttns.Add(GetAccount(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1362,27 +1192,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Account obj = new Account()
-                        {
-                            ID = reader.GetInt32(0),
-                            Seller = reader.GetString(1),
-                            ShipperName = reader.GetString(2),
-                            ShipperAdress = reader.GetString(3),
-                            ConsigneeName = reader.GetString(4),
-                            ConsigneeAdress = reader.GetString(5),
-                            Buyer = reader.GetString(6),
-                            CountUnits = reader.GetString(7),
-                            Count = reader.GetFloat(8),
-                            Price = reader.GetFloat(9),
-                            Summ = reader.GetFloat(10),
-                            Tax = reader.GetFloat(11),
-                            TaxSumm = reader.GetFloat(12),
-                            Date = reader.GetDateTime(13),
-                        };
-                        ttns.Add(obj);
+                        ttns.Add(GetAccount(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1392,7 +1205,7 @@ namespace BuildMaterials.BD
     }
     public class ContractsTable : IDBSetBase<Contract>
     {
-        private MySqlConnection _connection;
+        private readonly MySqlConnection _connection;
 
         public ContractsTable()
         {
@@ -1407,8 +1220,8 @@ namespace BuildMaterials.BD
                 ("CREATE TABLE IF NOT EXISTS contracts " +
                 "(id int not null auto_increment, seller varchar(100), buyer varchar(100)," +
                 "materialname varchar(100), count float not null," +
-                "countunits varchar(30), price varchar(20)," +
-                "summ varchar(30), date date," +
+                "countunits varchar(30), price float," +
+                "date date," +
                 " PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
@@ -1422,7 +1235,7 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 int readedCount = 0;
-                using (MySqlDataReader reader = _command.ExecuteReader())
+                using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                     while (reader.Read())
                     {
                         readedCount = reader.GetInt32(0);
@@ -1432,26 +1245,24 @@ namespace BuildMaterials.BD
             }
         }
 
+        private Contract GetContract(MySqlDataReader reader)
+        {
+            return new Contract(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetFloat(4),
+                reader.GetString(5), reader.GetFloat(6), reader.GetDateTime(7));
+        }
+
         public BuildMaterials.Models.Contract ElementAt(int id)
         {
-            Contract obj = new Contract();
+            Contract obj = null!;
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM contracts WHERE id={id};", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        obj.ID = reader.GetInt32(0);
-                        obj.Seller = reader.GetString(1);
-                        obj.Buyer = reader.GetString(2);
-                        obj.MaterialName = reader.GetString(3);
-                        obj.Count = reader.GetFloat(4);
-                        obj.CountUnits = reader.GetString(5);
-                        obj.Price = reader.GetString(6);
-                        obj.Summ = reader.GetString(7);
-                        obj.Date = reader.GetDateTime(8);
+                        obj = GetContract(reader);
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1463,9 +1274,9 @@ namespace BuildMaterials.BD
         {
             using (MySqlCommand command = new MySqlCommand("INSERT INTO contracts " +
                 "(Seller, Buyer, MaterialName, Count, CountUnits," +
-                "Price,Summ, Date) VALUES" +
-                $"('{obj.Seller}','{obj.Buyer}','{obj.MaterialName}','{obj.Count}'," +
-                $"'{obj.CountUnits}','{obj.Price}','{obj.Summ}','{obj.Date}');", _connection))
+                "Price, Date) VALUES" +
+                $"('{obj.Seller}','{obj.Buyer}','{obj.MaterialName}',{obj.Count}," +
+                $"'{obj.CountUnits}',{obj.Price},'{obj.Date!.Value.Year}-{obj.Date!.Value.Month}-{obj.Date!.Value.Day}');", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();
@@ -1498,21 +1309,10 @@ namespace BuildMaterials.BD
                     $" WHERE CONCAT(Seller,' ', Buyer,' ',MaterialName,' ',ConsigneeName," +
                     $"' ',ConsigneeAdress,' ',Buyer) like '%{text}%';)", _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Contract obj = new Contract();
-
-                        obj.ID = reader.GetInt32(0);
-                        obj.Seller = reader.GetString(1);
-                        obj.Buyer = reader.GetString(2);
-                        obj.MaterialName = reader.GetString(3);
-                        obj.Count = reader.GetFloat(4);
-                        obj.CountUnits = reader.GetString(5);
-                        obj.Price = reader.GetString(6);
-                        obj.Summ = reader.GetString(7);
-                        obj.Date = reader.GetDateTime(8);
-                        contracts.Add(obj);
+                        contracts.Add(GetContract(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -1533,21 +1333,10 @@ namespace BuildMaterials.BD
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand(query, _connection))
                 {
-                    MySqlDataReader reader = command.ExecuteReader();
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Contract obj = new Contract();
-
-                        obj.ID = reader.GetInt32(0);
-                        obj.Seller = reader.GetString(1);
-                        obj.Buyer = reader.GetString(2);
-                        obj.MaterialName = reader.GetString(3);
-                        obj.Count = reader.GetFloat(4);
-                        obj.CountUnits = reader.GetString(5);
-                        obj.Price = reader.GetString(6);
-                        obj.Summ = reader.GetString(7);
-                        obj.Date = reader.GetDateTime(8);
-                        ttns.Add(obj);
+                        ttns.Add(GetContract(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();

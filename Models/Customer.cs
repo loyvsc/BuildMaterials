@@ -1,21 +1,105 @@
 ﻿using BuildMaterials.BD;
-using System;
-using System.Collections.Generic;
 
 namespace BuildMaterials.Models
 {
     public class MaterialResponse : ITable
     {
+        public bool UseBD;
         public int ID { get; set; }
 
-        public string Name { get; set; } = string.Empty;
-        public string CountUnits { get; set; } = string.Empty;
-        public float BalanceAtStart { get; set; }
-        public float Prihod { get; set; }
-        public float Rashod { get; set; }
-        public float BalanceAtEnd { get; set; }
-        public int FinResponseEmployeeID { get; set; }
+        public string Name
+        {
+            get => name;
+            set
+            {
+                name = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET Name = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
+        public string CountUnits
+        {
+            get => countUnits;
+            set
+            {
+                countUnits = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET CountUnits = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
+        public float BalanceAtStart
+        {
+            get => balStart;
+            set
+            {
+                balStart = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET BalanceAtStart = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
+        public float Prihod
+        {
+            get => prihod;
+            set
+            {
+                prihod = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET Prihod = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
+        public float Rashod
+        {
+            get => rashod;
+            set
+            {
+                rashod = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET Rashod = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
+        public float BalanceAtEnd
+        {
+            get => balEnd;
+            set
+            {
+                balEnd = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET BalanceAtEnd = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
+        public int FinResponseEmployeeID
+        {
+            get => finRespEmpID;
+            set
+            {
+                finRespEmpID = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE MaterialResponses SET FinResponseEmployeeID = '{value}' WHERE ID ={ID};");
+                }
+            }
+        }
         public Employee FinReponseEmployee => App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
+
+        private int finRespEmpID = 0;
+        private float balEnd = 0;
+        private float rashod = 0;
+        private float prihod = 0;
+        private float balStart = 0;
+        private string countUnits = string.Empty;
+        private string name = string.Empty;
 
         public MaterialResponse() { }
         public MaterialResponse(int iD, string name, string countUnits, float balStart, float prihod, float rashod, float balEnd, int finRespId)
@@ -37,18 +121,109 @@ namespace BuildMaterials.Models
 
     public class Customer : ITable
     {
+        public bool UseBD;
         public int ID { get; set; }
-        public string? CompanyName { get; set; } = string.Empty;
-        public string? Adress { get; set; } = string.Empty;
-        public string? CompanyPerson { get; set; } = string.Empty;
-        public string? CompanyPhone { get; set; } = string.Empty;
-        public string? Bank { get; set; } = string.Empty;
-        public string? BankProp { get; set; } = string.Empty;
-        public string? UNP { get; set; } = string.Empty;
+        public string? CompanyName
+        {
+            get => companyName;
+            set
+            {
+                companyName = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET CompanyName ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? Adress
+        {
+            get => adress;
+            set
+            {
+                adress = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET Adress ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? CompanyPerson
+        {
+            get => companyPerson;
+            set
+            {
+                companyPerson = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET CompanyPerson ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? CompanyPhone
+        {
+            get => companyPhone;
+            set
+            {
+                companyPhone = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET CompanyPhone ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? Bank
+        {
+            get => bank;
+            set
+            {
+                bank = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET Bank ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? BankProp
+        {
+            get => bankProp;
+            set
+            {
+                bankProp = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET BankProp ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? UNP
+        {
+            get => unp;
+            set
+            {
+                unp = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Customers SET UNP ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
 
-        public Customer() { }
+        private string? companyName = string.Empty;
+        private string? adress = string.Empty;
+        private string? companyPerson = string.Empty;
+        private string? companyPhone = string.Empty;
+        private string? bank = string.Empty;
+        private string? bankProp = string.Empty;
+        private string? unp = string.Empty;
+
+        public Customer()
+        {
+            UseBD = false;
+        }
+
         public Customer(int iD, string? companyName, string? adress, string? companyPerson, string? companyPhone, string? bank, string? bankProp, string? uNP)
         {
+            UseBD = false;
             ID = iD;
             CompanyName = companyName;
             Adress = adress;
@@ -57,6 +232,7 @@ namespace BuildMaterials.Models
             Bank = bank;
             BankProp = bankProp;
             UNP = uNP;
+            UseBD = true;
         }
 
         public bool IsValid =>
@@ -75,7 +251,7 @@ namespace BuildMaterials.Models
 
         public string AsString()
         {
-            return $"Покупатель #{ID}\nКомпания: {CompanyName} по адресу: {Adress}\nПредставитель: {CompanyPerson} (номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
+            return $"Заказчик №{ID}\nКомпания: {CompanyName}\nАдрес расположения: {Adress}\nПредставитель: {CompanyPerson} (контактный номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
         }
 
         public static explicit operator Customer(Provider v)

@@ -34,7 +34,7 @@ namespace BuildMaterials.ViewModels
                 using (MySqlCommand _command = new MySqlCommand("SELECT Position, Password, AccessLevel FROM Employees;", _connection))
                 {
                     _connection.OpenAsync().Wait();
-                    using (MySqlDataReader reader = _command.ExecuteReader())
+                    using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                         while (reader.Read())
                         {
                             employees.Add(new Employee(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2)));

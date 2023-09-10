@@ -1,27 +1,145 @@
 ﻿using BuildMaterials.BD;
 using System;
+using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
-    public class TTN : ITable
+    public class TTN : ITable, INotifyPropertyChanged
     {
+        private readonly bool UseBD;
         public int ID { get; set; }
-        public string? Shipper { get; set; } = string.Empty;
-        public string? Consignee { get; set; } = string.Empty;
-        public string? Payer { get; set; } = string.Empty;
-        public float Count { get; set; } = 0;
-        public float Price { get; set; } = 0;
-        public string? MaterialName { get; set; } = string.Empty;
-        public string? CountUnits { get; set; } = string.Empty;
-        public float Weight { get; set; } = 0;
-        public float Summ { get; set; } = 0;
-        public DateTime? Date { get; set; }
+        public string? Shipper
+        {
+            get => shipper;
+            set
+            {
+                shipper = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Shipper = '{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? Consignee
+        {
+            get => consignee;
+            set
+            {
+                consignee = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Consignee = '{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? Payer
+        {
+            get => payer;
+            set
+            {
+                payer = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Payer = '{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public float Count
+        {
+            get => count;
+            set
+            {
+                count = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Count={value} WHERE ID={ID};");
+                }
+                OnPropertyChanged(nameof(Count));
+                OnPropertyChanged(nameof(Summ));
+            }
+        }
+        public float Price
+        {
+            get => price;
+            set
+            {
+                price = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Price={value} WHERE ID={ID};");
+                }
+                OnPropertyChanged(nameof(Price));
+                OnPropertyChanged(nameof(Summ));
+            }
+        }
+        public string? MaterialName
+        {
+            get => materialName;
+            set
+            {
+                materialName = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET MaterialName = '{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? CountUnits
+        {
+            get => countUnits;
+            set
+            {
+                countUnits = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET CountUnits = '{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public float Weight
+        {
+            get => weight;
+            set
+            {
+                weight = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Weight = {value} WHERE ID={ID};");
+                }
+            }
+        }
+        public float Summ => Count * Price;
+        public DateTime? Date
+        {
+            get => date;
+            set
+            {
+                date = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE TTNS SET Date = {value} WHERE ID={ID};");
+                }
+            }
+        }
+
+        private string? shipper = string.Empty;
+        private string? consignee = string.Empty;
+        private string? payer = string.Empty;
+        private string? materialName = string.Empty;
+        private string? countUnits = string.Empty;
+        private float weight = 0;
+        private float count = 0;
+        private float price = 0;
+        private DateTime? date;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public string? DateInString => Date?.ToShortDateString();
 
-        public TTN() { }
-        public TTN(int iD, string? shipper, string? consignee, string? payer, float count, float price, string materialName, string countUnit, float weight, float summ, DateTime? date)
+        public TTN() { UseBD = false; }
+        public TTN(int iD, string? shipper, string? consignee, string? payer, float count, float price, string materialName, string countUnit, float weight, DateTime? date)
         {
+            UseBD = false;
             ID = iD;
             Shipper = shipper;
             Consignee = consignee;
@@ -31,8 +149,8 @@ namespace BuildMaterials.Models
             MaterialName = materialName;
             CountUnits = countUnit;
             Weight = weight;
-            Summ = summ;
             Date = date;
+            UseBD = false;
         }
 
         public override string ToString()
@@ -47,5 +165,10 @@ namespace BuildMaterials.Models
             MaterialName != string.Empty &&
             CountUnits != string.Empty &&
             Date != null;
+
+        private void OnPropertyChanged(string propName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        }
     }
 }

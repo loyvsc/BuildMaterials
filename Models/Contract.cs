@@ -1,24 +1,120 @@
 ﻿using BuildMaterials.BD;
-using System;
+using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
-    public class Contract : ITable
+    public class Contract : ITable, INotifyPropertyChanged
     {
+        private readonly bool UseBD;
         public int ID { get; set; }
-        public string? Seller { get; set; } = string.Empty;
-        public string? Buyer { get; set; } = string.Empty;
-        public string? MaterialName { get; set; } = string.Empty;
-        public float Count { get; set; } = 0;
-        public string? CountUnits { get; set; } = string.Empty;
-        public string? Price { get; set; } = string.Empty;
-        public string? Summ { get; set; } = string.Empty;
-        public DateTime? Date { get; set; }
+        public string? Seller
+        {
+            get => seller;
+            set
+            {
+                seller = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET Seller ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? Buyer
+        {
+            get => buyer;
+            set
+            {
+                buyer = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET Buyer ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public string? MaterialName
+        {
+            get => materialName;
+            set
+            {
+                materialName = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET MaterialName ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public float Count
+        {
+            get => count;
+            set
+            {
+                count = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET Count ='{value}' WHERE ID={ID};");
+                }
+                OnPropertyChanged(nameof(Count));
+                OnPropertyChanged(nameof(Summ));
+            }
+        }
+        public string? CountUnits
+        {
+            get => countUnits;
+            set
+            {
+                countUnits = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET CountUnits ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+        public float Price
+        {
+            get => price;
+            set
+            {
+                price = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET Price ='{value}' WHERE ID={ID};");
+                }
+                OnPropertyChanged(nameof(Price));
+                OnPropertyChanged(nameof(Summ));
+            }
+        }
+        public float Summ => Count * Price;
+        public DateTime? Date
+        {
+            get => date;
+            set
+            {
+                date = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Contract SET Date ='{value!.Value.Year}-{value!.Value.Month}-{value!.Value.Day}' WHERE ID={ID};");
+                }
+            }
+        }
         public string? DateInString => Date?.ToShortDateString();
 
-        public Contract() { }
-        public Contract(int iD, string? seller, string? buyer, string? materialName, float count, string? countUnits, string? price, string? summ, DateTime? date)
+        private DateTime? date;
+        private string? countUnits = string.Empty;
+        private string? materialName = string.Empty;
+        private string? seller = string.Empty;
+        private string? buyer = string.Empty;
+        private float count = 0;
+        private float price = 0;        
+
+        public Contract()
         {
+            UseBD = false;
+        }
+
+        public Contract(int iD, string? seller, string? buyer, string? materialName, float count,
+            string? countUnits, float price, DateTime? date)
+        {
+            UseBD = false;
             ID = iD;
             Seller = seller;
             Buyer = buyer;
@@ -26,8 +122,15 @@ namespace BuildMaterials.Models
             Count = count;
             CountUnits = countUnits;
             Price = price;
-            Summ = summ;
             Date = date;
+            UseBD = true;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged(string propName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         public override string ToString()

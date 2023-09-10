@@ -59,8 +59,8 @@
                     <TextBox Grid.Column="1" Margin="0,0,0,5" Text="{Binding SearchText,UpdateSourceTrigger=PropertyChanged}"/>
                     <TabControl Grid.Column="1" Grid.Row="1" SelectionChanged="TabControl_SelectionChanged">
                         <TabItem Header="Материалы" x:Name="materialsTab">
-                            <DataGrid ItemsSource="{Binding MaterialsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                            <DataGrid ItemsSource="{Binding MaterialsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                     <DataGridTextColumn Header="Наименование" Binding="{Binding Name}"/>
@@ -76,8 +76,8 @@
                         <TabItem Header="Сотрудники" x:Name="employersTab">
                             <StackPanel>
                                 <FrameworkElement x:Name="ProxyElement" Visibility="Collapsed"/>
-                                <DataGrid ItemsSource="{Binding EmployeesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" CellEditEnding="DataGrid_CellEditEnding">
+                                <DataGrid ItemsSource="{Binding EmployeesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                         <DataGridTextColumn Header="Фамилия" Binding="{Binding SurName}"/>
@@ -87,15 +87,15 @@
                                         <DataGridTextColumn Header="Номер телефона" Binding="{Binding PhoneNumber}"/>
                                         <DataGridTextColumn Header="Уровень доступа" Binding="{Binding AccessLevelInString}" Visibility="{Binding CanViewConfidentional}"
                                                         IsReadOnly="True"/>
-                                        <DataGridCheckBoxColumn Header="Материально ответственный" Binding="{Binding FinResponsible}"/>
+                                        <DataGridCheckBoxColumn Header="Материально ответственный"  Binding="{Binding FinResponsible}"/>
                                         <DataGridTextColumn Header="Пароль" IsReadOnly="{Binding CanUserEditEmployeeConf, Source={x:Reference ProxyElement}}" Binding="{Binding Password}" Visibility="{Binding IsConfidentionNotView}"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </StackPanel>
                         </TabItem>
                         <TabItem Header="Заказчики" x:Name="customersTab">
-                            <DataGrid ItemsSource="{Binding CustomersList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" CanUserDeleteRows="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding">
+                            <DataGrid ItemsSource="{Binding CustomersList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                     <DataGridTextColumn Header="Наименование организации" Binding="{Binding CompanyName}"/>
@@ -109,8 +109,8 @@
                             </DataGrid>
                         </TabItem>
                         <TabItem Header="Поставщики" x:Name="postavTab">
-                            <DataGrid ItemsSource="{Binding ProvidersList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding">
+                            <DataGrid ItemsSource="{Binding ProvidersList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                     <DataGridTextColumn Header="Наименование организации" Binding="{Binding CompanyName}"/>
@@ -143,8 +143,8 @@
                             <Image Source="/img/print.ico"/>
                         </Button>
                     </StackPanel>
-                    <DataGrid Grid.Column="1" ItemsSource="{Binding TradesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding">
+                    <DataGrid Grid.Column="1" ItemsSource="{Binding TradesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                                      CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                             <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
@@ -176,8 +176,8 @@
                     </StackPanel>
                     <TabControl Grid.Column="1" SelectionChanged="TabControl_SelectionChanged">
                         <TabItem x:Name="ttnTab" Header="ТТН">
-                            <DataGrid Grid.Column="1" ItemsSource="{Binding TTNList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding TTNList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                     <DataGridTextColumn Header="Грузоотправитель" Binding="{Binding Shipper}"/>
@@ -194,28 +194,29 @@
                             </DataGrid>
                         </TabItem>
                         <TabItem x:Name="accountTab" Header="Счет-фактура">
-                            <DataGrid Grid.Column="1" ItemsSource="{Binding AccountsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding AccountsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}" 
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
                                     <DataGridTextColumn Header="Продавец" Binding="{Binding Seller}"/>
                                     <DataGridTextColumn Header="Грузоотправитель" Binding="{Binding ShipperName}"/>
                                     <DataGridTextColumn Header="Адрес грузоотправителя" Binding="{Binding ShipperAdress}"/>
                                     <DataGridTextColumn Header="Грузополучатель" Binding="{Binding ConsigneeName}"/>
-                                    <DataGridTextColumn Header="Адрес грузополучатель" Binding="{Binding ConsigneeAdress}"/>
+                                    <DataGridTextColumn Header="Адрес грузополучателя" Binding="{Binding ConsigneeAdress}"/>
                                     <DataGridTextColumn Header="Покупатель" Binding="{Binding Buyer}"/>
                                     <DataGridTextColumn Header="Количество" Binding="{Binding Count}"/>
                                     <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
-                                    <DataGridTextColumn Header="Цена" Binding="{Binding Price}"/>
+                                    <DataGridTextColumn Header="Стоимость за единицу" Binding="{Binding Price}"/>
                                     <DataGridTextColumn Header="Налогагая ставка" Binding="{Binding Tax}"/>
                                     <DataGridTextColumn Header="Сумма налога" Binding="{Binding TaxSumm}"/>
-                                    <DataGridTextColumn Header="Дата" Binding="{Binding DateInString}"/>
+                                    <DataGridTextColumn Header="Сумма" Binding="{Binding FinalSumm}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </TabItem>
                         <TabItem x:Name="contractTab" Header="Договор купли-продажи">
-                            <DataGrid Grid.Column="1" ItemsSource="{Binding ContractsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedIndex="{Binding SelectedRowIndex}" 
-                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False" CellEditEnding="DataGrid_CellEditEnding" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding ContractsList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}" 
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                     <DataGridTextColumn Header="Продавец" Binding="{Binding Seller}"/>

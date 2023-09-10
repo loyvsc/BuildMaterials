@@ -41,10 +41,10 @@ namespace BuildMaterials.ViewModels
                     _connection.Open();
                     using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, Pathnetic FROM Employees;", _connection))
                     {
-                        using (MySqlDataReader reader = _command.ExecuteReader())
+                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                             while (reader.Read())
                             {
-                                fio.Add($"{reader.GetString(0)} {reader.GetString(1)} {reader.GetString(2)}");
+                                fio.Add($"{reader.GetString(1)} {reader.GetString(0)} {reader.GetString(2)}");
                             }
                         _connection.Close();
                     }

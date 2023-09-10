@@ -10,6 +10,8 @@
     <UseWindowsForms>True</UseWindowsForms>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

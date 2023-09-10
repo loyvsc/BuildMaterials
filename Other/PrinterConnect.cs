@@ -1,15 +1,12 @@
-﻿using System;
-using System.Drawing;
+﻿using BuildMaterials.Models;
 using System.Drawing.Printing;
-using System.Windows.Forms;
-using BuildMaterials.Models;
 
 namespace BuildMaterials.Other
 {
     public class PrinterConnect : IDisposable
     {
         private string? printObj;
-        private PrintDocument printDocument;
+        private readonly PrintDocument printDocument;
         private bool disposedValue = false;
 
         public PrinterConnect()
@@ -21,65 +18,79 @@ namespace BuildMaterials.Other
         {
             try
             {
-                if (modelObj is Models.Account)
+                switch (modelObj)
                 {
-                    printObj = (modelObj as Account)?.ToString();
-                }
-                if (modelObj is Models.Contract)
-                {
-                    printObj = (modelObj as Contract)?.ToString();
-                }
-                if (modelObj is Models.Customer)
-                {
-                    printObj = (modelObj as Customer)?.AsString();
-                }
-                if (modelObj is Models.Employee)
-                {
-                    printObj = (modelObj as Employee)?.ToString();
-                }
-                if (modelObj is Models.Material)
-                {
-                    printObj = (modelObj as Material)?.AsString();
-                }
-                if (modelObj is Models.Provider)
-                {
-                    printObj = (modelObj as Provider)?.AsString();
-                }
-                if (modelObj is Models.Trade)
-                {
-                    printObj = (modelObj as Trade)?.ToString();
-                }
-                if (modelObj is Models.TTN)
-                {
-                    printObj = (modelObj as TTN)?.ToString();
-                }
-                if (printObj == null)
-                {
-                    printObj = "error";
+                    case Models.Account:
+                        {
+                            printObj = (modelObj as Account)?.ToString();
+                            break;
+                        }
+                    case Models.Contract:
+                        {
+                            printObj = (modelObj as Contract)?.ToString();
+                            break;
+                        }
+                    case Models.Customer:
+                        {
+                            printObj = (modelObj as Customer)?.AsString();
+                            break;
+                        }
+                    case Employee:
+                        {
+                            printObj = (modelObj as Employee)?.ToString();
+                            break;
+                        }
+                    case Material:
+                        {
+                            printObj = (modelObj as Material)?.AsString();
+                            break;
+                        }
+                    case Provider:
+                        {
+                            printObj = (modelObj as Provider)?.AsString();
+                            break;
+                        }
+                    case Trade:
+                        {
+                            printObj = (modelObj as Trade)?.ToString();
+                            break;
+                        }
+                    case TTN:
+                        {
+                            printObj = (modelObj as TTN)?.ToString();
+                            break;
+                        }
+                    case null:
+                        {
+                            printObj = "error";
+                            break;
+                        }
                 }
                 printDocument.PrintPage += PrintPageHandler;
 
-                PrintDialog printDialog = new PrintDialog()
+
+                using (PrintDialog printDialog = new PrintDialog()
                 {
                     Document = printDocument
-                };
-
-                if (printDialog.ShowDialog() == DialogResult.OK)
+                })
                 {
-                    printDialog.Document.Print();
-                    return true;
+                    if (printDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        printDialog.Document.Print();
+                        return true;
+                    }
                 }
                 return false;
             }
             finally
             {
                 printDocument.PrintPage -= PrintPageHandler;
-                printObj = null;
+                printObj = string.Empty;
             }
         }
 
         private void PrintPageHandler(object sender, PrintPageEventArgs e)
-        {                        
+        {
             e.Graphics?.DrawString(printObj, new Font("Arial", 14), System.Drawing.Brushes.Black, 0, 0);
         }
 

@@ -6,21 +6,26 @@ namespace BuildMaterials.ViewModels
 {
     public class SettingsViewModel
     {
-        public ICommand CancelCommand => new RelayCommand((sender) => Close());
+        public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand SaveCommand => new RelayCommand((sender) => SaveSettings());
+        public ICommand DBDropCommand => new RelayCommand((sender) => DropDB());
 
         private readonly Window _window = null!;
 
-        public Settings Settings { get; private set; }
+        public Settings Settings { get; private set; } = new Settings();
 
-        public SettingsViewModel()
-        {
-            Settings = new Settings();
-        }
+        public SettingsViewModel() { }
 
-        public SettingsViewModel(Window window) : this()
+        public SettingsViewModel(Window window)
         {
             _window = window;
+        }
+
+        private void DropDB()
+        {
+            App.DBContext.Query("DROP DATABASE buildmaterials;");
+            App.DBContext.InitializeDatabase();
+            App.DBContext.Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", 0, 3, false));
         }
 
         private void SaveSettings()
@@ -28,17 +33,12 @@ namespace BuildMaterials.ViewModels
             if (Settings.IsValid)
             {
                 Settings.Save();
-                Close();                
+                _window.Close();
             }
             else
             {
                 System.Windows.MessageBox.Show("Наименование организации не введено!", "Настройки", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void Close()
-        {
-            _window.Close();
         }
     }
 }

@@ -107,7 +107,7 @@ namespace BuildMaterials.ViewModels
                     _connection.OpenAsync().Wait();
                     using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
                     {
-                        using (MySqlDataReader reader = _command.ExecuteReader())
+                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                             while (reader.Read())
                             {
                                 fio.Add(new EmployeeFIO(reader.GetString(1), reader.GetString(0), reader.GetString(2)));
@@ -125,7 +125,7 @@ namespace BuildMaterials.ViewModels
         public ICommand AddRowCommand => new RelayCommand((sender) => AddRow());
         public ICommand DeleteRowCommand => new RelayCommand((sender) => DeleteRow());
         public ICommand PrintCommand => new RelayCommand((sender) => PrintContract());
-        public ICommand SaveChangesCommand => new RelayCommand((sender) => SaveChanges(new CancelEventArgs()));
+        public ICommand SaveChangesCommand => new RelayCommand((sender) => ExitFromProgramm(new CancelEventArgs()));
 
         private string _searchtext = string.Empty;
         public string SearchText
@@ -142,19 +142,8 @@ namespace BuildMaterials.ViewModels
         public Employee CurrentEmployee { get; set; }
         public Settings Settings { get; private set; }
 
-        public int SelectedRowIndex;
-
         public bool? CanAdd_EditConfidentional => CurrentEmployee.AccessLevel.Equals(3);
-        public Visibility IsConfidentionNotView => CurrentEmployee.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible;
-        public bool IsSaved
-        {
-            get => isSaved;
-            set
-            {
-                System.Windows.Application.Current.MainWindow.Title = value ? savedTitle : unsavedTitle;
-                isSaved = value;
-            }
-        }
+        public Visibility IsConfidentionNotView => CurrentEmployee.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible;        
         public Visibility IsPrintEnabled
         {
             get => isPrintEnabled;
@@ -165,16 +154,11 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        private bool isSaved = true;
-        private readonly string savedTitle;
-        private readonly string unsavedTitle;
         private Visibility isPrintEnabled;
         private string selectedTab = string.Empty;
 
         public MainWindowViewModel()
         {
-            savedTitle = App.Current.MainWindow.Title;
-            unsavedTitle = savedTitle + "*";
             CurrentEmployee = new Employee();
             MaterialsList = App.DBContext.Materials.ToList();
             EmployeesList = App.DBContext.Employees.ToList();
@@ -297,7 +281,7 @@ namespace BuildMaterials.ViewModels
 
         private void PrintContract()
         {
-            if (SelectedRowIndex.Equals(-1))
+            if (SelectedTableItem == null)
             {
                 return;
             }
@@ -308,45 +292,51 @@ namespace BuildMaterials.ViewModels
                     bool result = false;
                     switch (selectedTab)
                     {
+                        case "postavTab":
+                            {
+                                Provider selectedProvider = (Provider)SelectedTableItem;
+                                result = print.Print(selectedProvider);
+                                break;
+                            }
                         case "contractTab":
                             {
-                                Contract selectedContract = ContractsList[SelectedRowIndex];
+                                Contract selectedContract = (Contract)SelectedTableItem;
                                 result = print.Print(selectedContract);
                                 break;
                             }
                         case "accountTab":
                             {
-                                Account selectedAccount = AccountsList[SelectedRowIndex];
+                                Account selectedAccount = (Account)SelectedTableItem;
                                 result = print.Print(selectedAccount);
                                 break;
                             }
                         case "ttnTab":
                             {
-                                TTN selectedttn = TTNList[SelectedRowIndex];
+                                TTN selectedttn = (TTN)SelectedTableItem;
                                 result = print.Print(selectedttn);
                                 break;
                             }
                         case "uchetTab":
                             {
-                                Trade selected = TradesList[SelectedRowIndex];
+                                Trade selected = (Trade)SelectedTableItem;
                                 result = print.Print(selected);
                                 break;
                             }
                         case "materialsTab":
                             {
-                                Material selected = MaterialsList[SelectedRowIndex];
+                                Material selected = (Material)SelectedTableItem;
                                 result = print.Print(selected);
                                 break;
                             }
                         case "employersTab":
                             {
-                                Employee selected = EmployeesList[SelectedRowIndex];
+                                Employee selected = (Employee)SelectedTableItem;
                                 result = print.Print(selected);
                                 break;
                             }
                         case "customersTab":
                             {
-                                Customer selected = CustomersList[SelectedRowIndex];
+                                Customer selected = (Customer)SelectedTableItem;
                                 result = print.Print(selected);
                                 break;
                             }
@@ -359,6 +349,10 @@ namespace BuildMaterials.ViewModels
                 catch (Exception ex)
                 {
                     System.Windows.MessageBox.Show("Печать заверешена с ошибкой: " + ex.Message, "Печать", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+                finally
+                {
+                    SelectedTableItem = null;
                 }
             }
         }
@@ -389,23 +383,33 @@ namespace BuildMaterials.ViewModels
             }
         }
 
+        public ITable? SelectedTableItem { get; set; }
+
         private void DeleteRow()
         {
-            if (SelectedRowIndex == -1)
-            {
-                return;
-            }
             try
             {
+                if (SelectedTableItem == null) return;
                 switch (selectedTab)
                 {
+                    case "providersTab":
+                        {
+                            if (ProvidersList.Count.Equals(0))
+                            {
+                                return;
+                            }
+                            Provider buf = (Provider)SelectedTableItem;
+                            App.DBContext.Providers.Remove(buf);
+                            ProvidersList = App.DBContext.Providers.ToList();
+                            break;
+                        }
                     case "materialsTab":
                         {
                             if (MaterialsList.Count.Equals(0))
                             {
                                 return;
                             }
-                            Material buf = App.DBContext.Materials.ElementAt(SelectedRowIndex);
+                            Material buf = (Material)SelectedTableItem;
                             App.DBContext.Materials.Remove(buf);
                             MaterialsList = App.DBContext.Materials.ToList();
                             break;
@@ -416,7 +420,12 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Employee buf = App.DBContext.Employees.ElementAt(SelectedRowIndex);
+                            Employee buf = (Employee)SelectedTableItem;
+                            if (CurrentEmployee.Equals(buf))
+                            {
+                                System.Windows.MessageBox.Show("Нельзя удалять пользователя под которым был выполнен вход!");
+                                return;
+                            }
                             App.DBContext.Employees.Remove(buf);
                             EmployeesList = App.DBContext.Employees.ToList();
                             break;
@@ -427,7 +436,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Customer buf = App.DBContext.Customers.ElementAt(SelectedRowIndex);
+                            Customer buf = (Customer)SelectedTableItem;
                             App.DBContext.Customers.Remove(buf);
                             CustomersList = App.DBContext.Customers.ToList();
                             break;
@@ -438,7 +447,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Provider buf = App.DBContext.Providers.ElementAt(SelectedRowIndex);
+                            Provider buf = (Provider)SelectedTableItem;
                             App.DBContext.Providers.Remove(buf);
                             ProvidersList = App.DBContext.Providers.ToList();
                             break;
@@ -449,7 +458,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Trade buf = App.DBContext.Trades.ElementAt(SelectedRowIndex);
+                            Trade buf = (Trade)SelectedTableItem;
                             App.DBContext.Trades.Remove(buf);
                             TradesList = App.DBContext.Trades.ToList();
                             break;
@@ -460,7 +469,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            TTN buf = App.DBContext.TTNs.ElementAt(SelectedRowIndex);
+                            TTN buf = (TTN)SelectedTableItem;
                             App.DBContext.TTNs.Remove(buf);
                             TTNList = App.DBContext.TTNs.ToList();
                             break;
@@ -471,7 +480,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Account buf = App.DBContext.Accounts.ElementAt(SelectedRowIndex);
+                            Account buf = (Account)SelectedTableItem;
                             App.DBContext.Accounts.Remove(buf);
                             AccountsList = App.DBContext.Accounts.ToList();
                             break;
@@ -482,7 +491,7 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Contract buf = App.DBContext.Contracts.ElementAt(SelectedRowIndex);
+                            Contract buf = (Contract)SelectedTableItem;
                             App.DBContext.Contracts.Remove(buf);
                             ContractsList = App.DBContext.Contracts.ToList();
                             break;
@@ -492,6 +501,10 @@ namespace BuildMaterials.ViewModels
             catch (InvalidOperationException)
             {
                 return;
+            }
+            finally
+            {
+                SelectedTableItem = null;
             }
         }
 
@@ -504,7 +517,6 @@ namespace BuildMaterials.ViewModels
                         AddMaterialView addMaterial = new AddMaterialView();
                         if (addMaterial.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             MaterialsList = App.DBContext.Materials.ToList();
                         }
                         break;
@@ -514,7 +526,6 @@ namespace BuildMaterials.ViewModels
                         AddEmployeeView add = new AddEmployeeView();
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             EmployeesList = App.DBContext.Employees.ToList();
                         }
                         break;
@@ -524,7 +535,6 @@ namespace BuildMaterials.ViewModels
                         AddCustomerView add = new AddCustomerView();
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             CustomersList = App.DBContext.Customers.ToList();
                         }
                         break;
@@ -534,7 +544,6 @@ namespace BuildMaterials.ViewModels
                         AddProviderView add = new AddProviderView();
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             ProvidersList = App.DBContext.Providers.ToList();
                         }
                         break;
@@ -544,17 +553,15 @@ namespace BuildMaterials.ViewModels
                         AddTradeView add = new AddTradeView();
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             TradesList = App.DBContext.Trades.ToList();
                         }
                         break;
                     }
                 case "ttnTab":
                     {
-                        AddTTNView add = new AddTTNView(CustomersList, ProvidersList);
+                        AddTTNView add = new AddTTNView(ProvidersList);
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             TTNList = App.DBContext.TTNs.ToList();
                         }
                         break;
@@ -564,7 +571,6 @@ namespace BuildMaterials.ViewModels
                         AddAccountView add = new AddAccountView();
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             AccountsList = App.DBContext.Accounts.ToList();
                         }
                         break;
@@ -574,7 +580,6 @@ namespace BuildMaterials.ViewModels
                         AddContractView add = new AddContractView();
                         if (add.ShowDialog() == true)
                         {
-                            IsSaved = false;
                             ContractsList = App.DBContext.Contracts.ToList();
                         }
                         break;
@@ -582,25 +587,12 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        //TODO: удалить это предупреждение либо делать резерную копию при запуске или как-то по другому
-        public void SaveChanges(CancelEventArgs e)
+        public void ExitFromProgramm(CancelEventArgs e)
         {
-            if (IsSaved.Equals(false))
+            MessageBoxResult result = System.Windows.MessageBox.Show("Выйти из программы?", "АРМ Менеджера Строительной Компании", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result== MessageBoxResult.No)
             {
-                MessageBoxResult result = System.Windows.MessageBox.Show("Сохранить внесенные измения перед выходом?", savedTitle, System.Windows.MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-                switch (result)
-                {
-                    case MessageBoxResult.Cancel:
-                        {
-                            e.Cancel = true;
-                            break;
-                        }
-                    case MessageBoxResult.Yes:
-                        {
-                            //сохранение изменений
-                            break;
-                        }
-                }
+                e.Cancel = true;
             }
         }
 
