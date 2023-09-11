@@ -27,7 +27,7 @@ namespace BuildMaterials.ViewModels
         {
             if (Material.IsValid)
             {
-                Material.EnterCount = Material.Count;
+                Material.Count = Material.Count;
                 Material.EnterDate = DateTime.Now.Date;
                 App.DBContext.Materials.Add(Material);
                 _window.DialogResult = true;

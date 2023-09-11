@@ -65,11 +65,10 @@
                                     <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
                                     <DataGridTextColumn Header="Наименование" Binding="{Binding Name}"/>
                                     <DataGridTextColumn Header="Производитель" Binding="{Binding Manufacturer}"/>
-                                    <DataGridTextColumn Header="Стоимость" Binding="{Binding Price}"/>
+                                    <DataGridTextColumn Header="Стоимость за единицу" Binding="{Binding Price}"/>
                                     <DataGridTextColumn Header="Текущее количество" Binding="{Binding Count}"/>
                                     <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
                                     <DataGridTextColumn Header="Дата поступления" Binding="{Binding EnterDate, Converter={StaticResource dateConverter}}" IsReadOnly="True"/>
-                                    <DataGridTextColumn Header="Количество поступления" Binding="{Binding EnterCount}" IsReadOnly="True"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </TabItem>

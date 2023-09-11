@@ -240,7 +240,7 @@ namespace BuildMaterials.BD
         {
             _connection = new MySqlConnection(StaticValues.ConnectionString);
             _connection.OpenAsync().Wait();
-            using (MySqlCommand command = new MySqlCommand("CREATE TABLE IF NOT EXISTS materials (ID int NOT NULL AUTO_INCREMENT, Name varchar(300) not null, Manufacturer varchar(100) not null, Price float NOT NULL,Count float NOT NULL,CountUnits varchar(20) ,EnterDate datetime NOT NULL,EnterCount float NOT NULL, PRIMARY KEY (ID));", _connection))
+            using (MySqlCommand command = new MySqlCommand("CREATE TABLE IF NOT EXISTS materials (ID int NOT NULL AUTO_INCREMENT, Name varchar(300) not null, Manufacturer varchar(100) not null, Price float NOT NULL,Count float NOT NULL,CountUnits varchar(20) ,EnterDate datetime NOT NULL, PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -270,8 +270,8 @@ namespace BuildMaterials.BD
         {
             _connection.OpenAsync().Wait();
             using (MySqlCommand command = new MySqlCommand("INSERT INTO materials " +
-                "(Name, Manufacturer, Price, Count, CountUnits, EnterDate, EnterCount) VALUES" +
-                $"('{obj.Name}','{obj.Manufacturer}',{obj.Price},{obj.Count},'{obj.CountUnits}','{obj.EnterDate.Year}-{obj.EnterDate.Month}-{obj.EnterDate.Day}',{obj.EnterCount});", _connection))
+                "(Name, Manufacturer, Price, Count, CountUnits, EnterDate) VALUES" +
+                $"('{obj.Name}','{obj.Manufacturer}',{obj.Price},{obj.Count},'{obj.CountUnits}','{obj.EnterDate.Year}-{obj.EnterDate.Month}-{obj.EnterDate.Day}');", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -305,14 +305,13 @@ namespace BuildMaterials.BD
             {
                 _connection.OpenAsync().Wait();
                 using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Materials WHERE " +
-                    $"CONCAT(name,' ', manufacturer,' ', price,' ',count,' ',enterdate,' ',entercount) like '%{text}%';", _connection))
+                    $"CONCAT(name,' ', manufacturer,' ', price,' ',count,' ',enterdate) like '%{text}%';", _connection))
                 {
                     MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
                         Material employee = new Material(reader.GetInt32(0), reader.GetString(1), reader.GetString(2),
-                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6),
-                            reader.GetFloat(7));
+                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6));
                         materials.Add(employee);
                     }
                 }
@@ -349,7 +348,7 @@ namespace BuildMaterials.BD
         private Material GetMaterial(MySqlDataReader reader)
         {
             return new Material(reader.GetInt32(0), reader.GetString(1), reader.GetString(2),
-                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6), reader.GetFloat(7));
+                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6));
         }
 
         public List<Material> ToList()

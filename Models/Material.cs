@@ -78,18 +78,6 @@ namespace BuildMaterials.Models
                 }
             }
         }
-        public float EnterCount
-        {
-            get => enterCount;
-            set
-            {
-                enterCount = value;
-                if (UseBD)
-                {
-                    App.DBContext.Query($"UPDATE Materials SET EnterCount = '{value}' WHERE ID = {ID};");
-                }
-            }
-        }
 
         private string? name;
         private string? manufacturer;
@@ -97,11 +85,10 @@ namespace BuildMaterials.Models
         private float count;
         private string? countUnits;
         private DateTime enterDate;
-        private float enterCount;
 
         public string AsString()
         {
-            return $"Материал #{ID}\nНаименование: {Name}\nПроизводитель: {Manufacturer}\nПоступление {EnterDate.Date.ToShortDateString()} в количестве {EnterCount}\nКоличетсво: {Count} {CountUnits}\nСтоимость: {Price}";
+            return $"Материал #{ID}\nНаименование: {Name}\nПроизводитель: {Manufacturer}\nПоступление {EnterDate.Date.ToShortDateString()}\nКоличетсво: {Count} {CountUnits}\nСтоимость: {Price}";
         }
 
         public Material()
@@ -120,7 +107,7 @@ namespace BuildMaterials.Models
             ID = id;
         }
 
-        public Material(int id, string name, string manufacturer, float price, float count, string countUnits, DateTime enterDate, float enterCount)
+        public Material(int id, string name, string manufacturer, float price, float count, string countUnits, DateTime enterDate)
         {
             UseBD = true;
             ID = id;
@@ -130,7 +117,6 @@ namespace BuildMaterials.Models
             this.count = count;
             this.countUnits = countUnits;
             this.enterDate = enterDate;
-            this.enterCount = enterCount;
         }
 
         public bool IsValid => Name != string.Empty &&
