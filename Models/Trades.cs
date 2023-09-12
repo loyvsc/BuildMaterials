@@ -88,14 +88,13 @@ namespace BuildMaterials.Models
 
         public Trade(int iD, DateTime? date, string sellerFio, string materialName, float count, float price)
         {
-            UseBD = false;
-            ID = iD;
-            Date = date;
-            SellerFio = sellerFio;
-            MaterialName = materialName;
-            Count = count;
-            Price = price;
             UseBD = true;
+            this.ID = iD;
+            this.date = date;
+            this.sellerFio = sellerFio;
+            this.materialName = materialName;
+            this.count = count;
+            this.price = price;
         }
 
         public bool IsValid => Date != null

@@ -12,11 +12,7 @@
     <Window.DataContext>
         <viewmodels:MainWindowViewModel x:Name="dc"/>
     </Window.DataContext>
-    <Window.InputBindings>
-        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveChangesCommand}"/>
-    </Window.InputBindings>
     <Window.Resources>
-        <CollectionViewSource x:Key="SellersFIO" Source="{Binding SellersFIO}"/>
         <conveters:BoolConveter x:Key="boolConverter"/>
         <conveters:DateStringConverter x:Key="dateConverter"/>
     </Window.Resources>
@@ -142,7 +138,7 @@
                             <Image Source="/img/print.ico"/>
                         </Button>
                     </StackPanel>
-                    <DataGrid Grid.Column="1" ItemsSource="{Binding TradesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
+                    <DataGrid Grid.Column="1" ItemsSource="{Binding TradesList}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}"
                                       CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>

@@ -22,8 +22,7 @@ namespace BuildMaterials.ViewModels
         private List<Account> accounts = null!;
         private List<Contract> contracts = null!;
 
-        public bool CanUserEditEmployeeConf => CurrentEmployee.AccessLevel.Equals(3);
-
+        public bool CanUserEditEmployeeConf => CurrentEmployee?.AccessLevel == 3;
         public List<Material> MaterialsList
         {
             get => materials;
@@ -97,53 +96,44 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        public EmployeeFIO[] SellersFIO
-        {
-            get
-            {
-                List<EmployeeFIO> fio = new List<EmployeeFIO>(32);
-                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-                {
-                    _connection.OpenAsync().Wait();
-                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
-                    {
-                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
-                            while (reader.Read())
-                            {
-                                fio.Add(new EmployeeFIO(reader.GetString(1), reader.GetString(0), reader.GetString(2)));
-                            }
-                    }
-                    _connection.CloseAsync().Wait();
-                }
-                return fio.ToArray();
-            }
-        }
-
         public ICommand AboutProgrammCommand => new RelayCommand((sender) => OpenAboutProgram());
         public ICommand ExitCommand => new RelayCommand((sener) => System.Windows.Application.Current.MainWindow.Close());
         public ICommand SettingsCommand => new RelayCommand((sener) => OpenSettings());
         public ICommand AddRowCommand => new RelayCommand((sender) => AddRow());
         public ICommand DeleteRowCommand => new RelayCommand((sender) => DeleteRow());
         public ICommand PrintCommand => new RelayCommand((sender) => PrintContract());
-        public ICommand SaveChangesCommand => new RelayCommand((sender) => ExitFromProgramm(new CancelEventArgs()));
 
+        public bool CanViewConfidentional => CurrentEmployee?.AccessLevel == 3;
         private string _searchtext = string.Empty;
         public string SearchText
         {
             get => _searchtext;
             set
             {
-                _searchtext = value.Trim();
-                Search(_searchtext);
-                OnPropertyChanged(nameof(SearchText));
+                if (value.Trim() != _searchtext)
+                {
+                    _searchtext = value.Trim();
+                    OnPropertyChanged(nameof(SearchText));
+                    Search(_searchtext);
+                }
             }
         }
 
-        public Employee CurrentEmployee { get; set; }
+        private Employee? currentEmployee;
+        public Employee? CurrentEmployee
+        {
+            get => currentEmployee;
+            set
+            {
+                currentEmployee = value;
+                OnPropertyChanged(nameof(CurrentEmployee));
+                OnPropertyChanged(nameof(CanViewConfidentional));
+            }
+        }
         public Settings Settings { get; private set; }
 
-        public bool? CanAdd_EditConfidentional => CurrentEmployee.AccessLevel.Equals(3);
-        public Visibility IsConfidentionNotView => CurrentEmployee.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible;        
+        public bool? CanAdd_EditConfidentional => CurrentEmployee?.AccessLevel.Equals(3);
+        public Visibility IsConfidentionNotView => CurrentEmployee?.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible;
         public Visibility IsPrintEnabled
         {
             get => isPrintEnabled;
@@ -206,26 +196,6 @@ namespace BuildMaterials.ViewModels
                                 ProvidersList = App.DBContext.Providers.ToList();
                                 break;
                             }
-                        case "uchetTab":
-                            {
-                                TradesList = App.DBContext.Trades.ToList();
-                                break;
-                            }
-                        case "ttnTab":
-                            {
-                                TTNList = App.DBContext.TTNs.ToList();
-                                break;
-                            }
-                        case "accountTab":
-                            {
-                                AccountsList = App.DBContext.Accounts.ToList();
-                                break;
-                            }
-                        case "contractTab":
-                            {
-                                ContractsList = App.DBContext.Contracts.ToList();
-                                break;
-                            }
                     }
                     return;
                 }
@@ -251,26 +221,6 @@ namespace BuildMaterials.ViewModels
                             ProvidersList = App.DBContext.Providers.Search(text);
                             break;
                         }
-                    case "uchetTab":
-                        {
-                            TradesList = App.DBContext.Trades.Search(text);
-                            break;
-                        }
-                    case "ttnTab":
-                        {
-                            TTNList = App.DBContext.TTNs.Search(text);
-                            break;
-                        }
-                    case "accountTab":
-                        {
-                            AccountsList = App.DBContext.Accounts.Search(text);
-                            break;
-                        }
-                    case "contractTab":
-                        {
-                            ContractsList = App.DBContext.Contracts.Search(text);
-                            break;
-                        }
                 }
             }
             catch (System.ArgumentNullException)
@@ -286,7 +236,7 @@ namespace BuildMaterials.ViewModels
                 return;
             }
             using (PrinterConnect print = new PrinterConnect())
-            {
+            { 
                 try
                 {
                     bool result = false;
@@ -421,7 +371,7 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             Employee buf = (Employee)SelectedTableItem;
-                            if (CurrentEmployee.Equals(buf))
+                            if (CurrentEmployee == buf)
                             {
                                 System.Windows.MessageBox.Show("Нельзя удалять пользователя под которым был выполнен вход!");
                                 return;
@@ -590,13 +540,13 @@ namespace BuildMaterials.ViewModels
         public void ExitFromProgramm(CancelEventArgs e)
         {
             MessageBoxResult result = System.Windows.MessageBox.Show("Выйти из программы?", "АРМ Менеджера Строительной Компании", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result== MessageBoxResult.No)
+            if (result == MessageBoxResult.No)
             {
                 e.Cancel = true;
             }
         }
 
-        private void OnPropertyChanged(string propertyName)
+        public void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

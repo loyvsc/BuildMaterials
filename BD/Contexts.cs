@@ -161,22 +161,7 @@ namespace BuildMaterials.BD
 
         public List<MaterialResponse> Search(string text)
         {
-            List<MaterialResponse> materials = new List<MaterialResponse>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM materialresponses WHERE " +
-                    $"Name like '%{text}%';", _connection))
-                {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        materials.Add(GetMaterialResponse(reader));
-                    }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return materials;
+            return Select($"SELECT * FROM materialresponses WHERE Name like '%{text}%';");
         }
 
         public List<MaterialResponse> Select(string query)
@@ -215,21 +200,7 @@ namespace BuildMaterials.BD
 
         public List<MaterialResponse> ToList()
         {
-            List<MaterialResponse> materials = new List<MaterialResponse>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand("SELECT * FROM materialresponses;", _connection))
-                {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        materials.Add(GetMaterialResponse(reader));
-                    }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return materials;
+            return Select("SELECT * FROM MATERIALRESPONSES;");
         }
     }
     public class MaterialsTable : IDBSetBase<Material>
@@ -300,24 +271,7 @@ namespace BuildMaterials.BD
 
         public List<Material> Search(string text)
         {
-            List<Material> materials = new List<Material>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Materials WHERE " +
-                    $"CONCAT(name,' ', manufacturer,' ', price,' ',count,' ',enterdate) like '%{text}%';", _connection))
-                {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        Material employee = new Material(reader.GetInt32(0), reader.GetString(1), reader.GetString(2),
-                            reader.GetFloat(3), reader.GetFloat(4), reader.GetString(5), reader.GetDateTime(6));
-                        materials.Add(employee);
-                    }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return materials;
+            return Select($"SELECT * FROM Materials WHERE CONCAT(name,' ', manufacturer,' ', price,' ',count,' ',enterdate) like '%{text}%';");
         }
 
         public List<Material> Select(string query)
@@ -331,13 +285,7 @@ namespace BuildMaterials.BD
                     MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
                     while (reader.Read())
                     {
-                        Material material = new Material()
-                        {
-                            ID = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            Count = reader.GetFloat(2),
-                        };
-                        materials.Add(material);
+                        materials.Add(GetMaterial(reader));
                     }
                 }
                 _connection.CloseAsync().Wait();
@@ -353,21 +301,7 @@ namespace BuildMaterials.BD
 
         public List<Material> ToList()
         {
-            List<Material> materials = new List<Material>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand("SELECT * FROM Materials;", _connection))
-                {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        materials.Add(GetMaterial(reader));
-                    }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return materials;
+            return Select("SELECT * FROM Materials;");
         }
     }
     public class EmployeesTable : IDBSetBase<Employee>
@@ -739,22 +673,8 @@ namespace BuildMaterials.BD
 
         public List<Provider> Search(string text)
         {
-            List<Provider> providers = new List<Provider>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM providers WHERE " +
-                    $"CONCAT(companyname,' ', adress,' ', companyperson,' ',bank,' ',bankprop,' ', unp) like '%{text}%';", _connection))
-                {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        providers.Add(GetProvider(reader));
-                    }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return providers;
+            return Select($"SELECT * FROM providers WHERE " +
+                    $"CONCAT(companyname,' ', adress,' ', companyperson,' ',bank,' ',bankprop,' ', unp) like '%{text}%';");
         }
 
         public List<Provider> ToList()
@@ -822,25 +742,23 @@ namespace BuildMaterials.BD
 
         private Trade GetTrade(MySqlDataReader reader)
         {
-            return new Trade(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2), reader.GetString(3), reader.GetFloat(4), reader.GetFloat(5));
+            return new Trade(reader.GetInt32(0), reader.GetDateTime(1), reader.GetString(2),
+                reader.GetString(3), reader.GetFloat(4), reader.GetFloat(5));
         }
 
-        public BuildMaterials.Models.Trade ElementAt(int id)
+        public Trade ElementAt(int id)
         {
             Trade obj = null!;
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+            _connection.OpenAsync().Wait();
+            using (MySqlCommand command = new MySqlCommand($"SELECT * FROM trades WHERE id={id};", _connection))
             {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM trades WHERE id={id};", _connection))
+                MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
+                while (reader.Read())
                 {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        obj = GetTrade(reader);
-                    }
+                    obj = GetTrade(reader);
                 }
-                _connection.CloseAsync().Wait();
             }
+            _connection.CloseAsync().Wait();
             return obj;
         }
 
@@ -874,22 +792,7 @@ namespace BuildMaterials.BD
 
         public List<Trade> Search(string text)
         {
-            List<Trade> trades = new List<Trade>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM trades" +
-                    $" WHERE CONCAT(SellerFio,' ', MaterialName) like '%{text}%';)", _connection))
-                {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        trades.Add(GetTrade(reader));
-                    }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return trades;
+            return App.DBContext.Trades.Select($"SELECT * FROM trades WHERE CONCAT(SellerFio,' ', MaterialName) like '%{text}%';)");
         }
 
         public List<Trade> ToList()
@@ -1103,7 +1006,7 @@ namespace BuildMaterials.BD
 
         private Account GetAccount(MySqlDataReader reader)
         {
-            return new Account(reader.GetInt32(0),reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
+            return new Account(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
                 reader.GetString(5), reader.GetString(6), reader.GetString(7),
                 reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11));
         }
