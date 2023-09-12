@@ -1,8 +1,6 @@
 ﻿using BuildMaterials.BD;
 using BuildMaterials.Models;
 using BuildMaterials.Views;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
@@ -13,9 +11,9 @@ namespace BuildMaterials.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public Employee[] Employees { get; private set; }
+        public List<Employee> Employees => GetEmployees();
         public ICommand AutorizeCommand => new RelayCommand((sender) => Autorize());
-        public int SelectedTypeIndex { get; set; }
+        public int SelectedTypeIndex { get; set; }        
         public string? EnteredPassword
         {
             get => _enteredPassword;
@@ -26,12 +24,12 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        public LoginViewModel()
+        private List<Employee> GetEmployees()
         {
             List<Employee> employees = new List<Employee>(32);
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
-                using (MySqlCommand _command = new MySqlCommand("SELECT Position, Password, AccessLevel FROM Employees;", _connection))
+                using (MySqlCommand _command = new MySqlCommand("SELECT concat(surname,' ', name,' ',pathnetic), Password, AccessLevel FROM Employees;", _connection))
                 {
                     _connection.OpenAsync().Wait();
                     using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
@@ -42,9 +40,11 @@ namespace BuildMaterials.ViewModels
                     _connection.CloseAsync().Wait();
                 }
             }
-            Employees = employees.ToArray();
+            return employees;
         }
 
+        public LoginViewModel() { }
+        
         public LoginViewModel(Window parentWindow) : this()
         {
             _window = parentWindow;
@@ -108,8 +108,8 @@ namespace BuildMaterials.ViewModels
 
         public event EventHandler? CanExecuteChanged
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
         }
 
         public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
