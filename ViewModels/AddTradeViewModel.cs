@@ -26,7 +26,7 @@ namespace BuildMaterials.ViewModels
         }
     }
 
-    public class AddTradeViewModel : INotifyPropertyChanged
+    public class AddTradeViewModel : NotifyPropertyChangedBase
     {
         public Models.Trade Trade { get; set; }
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
@@ -90,8 +90,6 @@ namespace BuildMaterials.ViewModels
         }
         private string _maxCountValue = string.Empty;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         private void AddMaterial()
         {
             if (Trade.Count > _selMat.Count)
@@ -109,11 +107,6 @@ namespace BuildMaterials.ViewModels
                 return;
             }
             System.Windows.MessageBox.Show("Не вся информация была введена!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        public void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }

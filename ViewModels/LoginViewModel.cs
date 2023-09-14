@@ -7,10 +7,8 @@ using System.Windows.Input;
 
 namespace BuildMaterials.ViewModels
 {
-    public class LoginViewModel : INotifyPropertyChanged
+    public class LoginViewModel : NotifyPropertyChangedBase
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         public List<Employee> Employees => GetEmployees();
         public ICommand AutorizeCommand => new RelayCommand((sender) => Autorize());
         public int SelectedTypeIndex { get; set; }        
@@ -93,11 +91,6 @@ namespace BuildMaterials.ViewModels
             {
                 System.Windows.MessageBox.Show(aEx.Message, "Авторизация", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
-        }
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
-    public class Contract : ITable, INotifyPropertyChanged
+    public class Contract : NotifyPropertyChangedBase, ITable
     {
         private readonly bool UseBD;
         public int ID { get; set; }
@@ -124,13 +124,6 @@ namespace BuildMaterials.Models
             Price = price;
             Date = date;
             UseBD = true;
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         public override string ToString()

@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
-    public class TTN : ITable, INotifyPropertyChanged
+    public class TTN : NotifyPropertyChangedBase, ITable
     {
         private readonly bool UseBD;
         public int ID { get; set; }
@@ -132,8 +132,6 @@ namespace BuildMaterials.Models
         private float price = 0;
         private DateTime? date;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         public string? DateInString => Date?.ToShortDateString();
 
         public TTN() { UseBD = false; }
@@ -165,10 +163,5 @@ namespace BuildMaterials.Models
             MaterialName != string.Empty &&
             CountUnits != string.Empty &&
             Date != null;
-
-        private void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
     }
 }

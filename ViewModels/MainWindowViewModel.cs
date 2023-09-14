@@ -9,10 +9,8 @@ using System.Windows.Input;
 
 namespace BuildMaterials.ViewModels
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : NotifyPropertyChangedBase
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         private List<Material> materials = null!;
         private List<Employee> employees = null!;
         private List<Customer> customers = null!;
@@ -544,11 +542,6 @@ namespace BuildMaterials.ViewModels
             {
                 e.Cancel = true;
             }
-        }
-
-        public void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

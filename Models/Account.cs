@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
-    public class Account : ITable, INotifyPropertyChanged
+    public class Account : NotifyPropertyChangedBase, ITable
     {
         private readonly bool UseBD;
 
@@ -195,8 +195,6 @@ namespace BuildMaterials.Models
         private float price = 0;
         private float tax = 0;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         public Account()
         {
             UseBD = false;
@@ -219,10 +217,6 @@ namespace BuildMaterials.Models
             Date = date;
             Material = material;
             UseBD = true;
-        }
-        private void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
         public override string ToString()
