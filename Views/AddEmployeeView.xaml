@@ -36,12 +36,20 @@
 
             <TextBlock>Пароль</TextBlock>
             <TextBox Text="{Binding Path=Employee.Password}"/>
-
+                       
             <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
                 <TextBlock>Материально ответственный</TextBlock>
                 <CheckBox IsChecked="{Binding Employee.FinResponsible}"/>
             </StackPanel>
+            <GroupBox Header="Пасспортные данные">
+                <StackPanel>
+                    <TextBlock Text="Серия и номер пасспорта"/>
+                    <TextBox Text="{Binding Employee.PassportNumber}"/>
+                    <DatePicker Margin="0,5,0,0" SelectedDate="{Binding Employee.PassportIssueDate}"/>
+                </StackPanel>
+            </GroupBox>
         </StackPanel>
+        
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
             <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding AddCommand}">Добавить</Button>
             <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding CancelCommand}">Отмена</Button>

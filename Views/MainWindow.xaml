@@ -82,6 +82,8 @@
                                         <DataGridTextColumn Header="Номер телефона" Binding="{Binding PhoneNumber}"/>
                                         <DataGridTextColumn Header="Уровень доступа" Binding="{Binding AccessLevelInString}" Visibility="{Binding CanViewConfidentional}"
                                                         IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="Серия и номер пасспорта" Binding="{Binding PassportNumber}"/>
+                                        <DataGridTextColumn Header="Дата выдачи паспорта" Binding="{Binding DateInString}"/>
                                         <DataGridCheckBoxColumn Header="Материально ответственный"  Binding="{Binding FinResponsible}"/>
                                         <DataGridTextColumn Header="Пароль" IsReadOnly="{Binding CanUserEditEmployeeConf, Source={x:Reference ProxyElement}}" Binding="{Binding Password}" Visibility="{Binding IsConfidentionNotView}"/>
                                     </DataGrid.Columns>

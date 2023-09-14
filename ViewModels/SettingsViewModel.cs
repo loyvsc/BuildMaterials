@@ -25,7 +25,7 @@ namespace BuildMaterials.ViewModels
         {
             App.DBContext.Query("DROP DATABASE buildmaterials;");
             App.DBContext.InitializeDatabase();
-            App.DBContext.Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", 0, 3, false));
+            App.DBContext.Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234","BM123456789",DateTime.Now));
         }
 
         private void SaveSettings()

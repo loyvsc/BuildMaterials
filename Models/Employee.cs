@@ -1,4 +1,5 @@
 ﻿using BuildMaterials.BD;
+using System.Text.RegularExpressions;
 
 namespace BuildMaterials.Models
 {
@@ -78,6 +79,8 @@ namespace BuildMaterials.Models
                 }
             }
         }
+
+        public string? DateInString => PassportIssueDate.ToShortDateString();
         public bool FinResponsible
         {
             get => finResponsible;
@@ -103,6 +106,45 @@ namespace BuildMaterials.Models
             }
         }
 
+        public string PassportNumber
+        {
+            get => passportNumber;
+            set
+            {
+                if (CheckPassportNumber(value) == false)
+                {
+                    return;
+                }
+                passportNumber = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Employee SET PassportNumber ='{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+
+        private bool CheckPassportNumber(string passportNumber)
+        {
+            const string pattern = @"^[A-Z]{2}\d{7}$";
+            Regex regex = new Regex(pattern);
+            return regex.IsMatch(passportNumber);
+        }
+
+        public DateTime PassportIssueDate
+        {
+            get => passportIssueDate;
+            set
+            {
+                passportIssueDate = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Employee SET PassportIssueDate ='{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+
+        private DateTime passportIssueDate = DateTime.Now;
+        private string passportNumber = string.Empty;
         private string? name;
         private string? surname;
         private string? pathnetic;
@@ -119,7 +161,7 @@ namespace BuildMaterials.Models
             UseBD = false;
         }
 
-        public Employee(int id, string name, string surName, string pathnetic, string position, string phoneNumber, int password = 0, int accessLevel = 3, bool finResp = false)
+        public Employee(int id, string name, string surName, string pathnetic, string position, string phoneNumber, string passportNumber, DateTime issueDate, int password = 0, int accessLevel = 3, bool finResp = false)
         {
             ID = id;
             UseBD = false;
@@ -131,6 +173,8 @@ namespace BuildMaterials.Models
             PhoneNumber = phoneNumber;
             Password = password;
             AccessLevel = accessLevel;
+            PassportIssueDate = issueDate;
+            PassportNumber = passportNumber;
             UseBD = true;
         }
 
@@ -157,6 +201,8 @@ namespace BuildMaterials.Models
         }
 
         public bool IsValid =>
+            PassportIssueDate!=DateTime.Now &&
+            PassportNumber!=string.Empty &&
             Name != string.Empty &&
             SurName != string.Empty &&
             Pathnetic != string.Empty &&

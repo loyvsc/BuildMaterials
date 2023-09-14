@@ -6,7 +6,7 @@ using System.Windows.Input;
 namespace BuildMaterials.ViewModels
 {
     public static class Extensions
-    {
+    {        
         public static void AddProvider(this List<Customer> customers, List<Provider> providers)
         {
             for (int i = 0; i < providers.Count; i++)

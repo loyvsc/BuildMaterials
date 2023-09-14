@@ -37,7 +37,7 @@ namespace BuildMaterials.BD
             InitializeDatabase();
             if (Employees?.Count() == 0)
             {
-                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", 0, 3, false));
+                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234","BM3132131",DateTime.Now, 0, 3));
             }
         }
 
@@ -315,7 +315,7 @@ namespace BuildMaterials.BD
             using (MySqlCommand command = new MySqlCommand("CREATE TABLE IF NOT EXISTS employees" +
                 "(ID int NOT NULL AUTO_INCREMENT, Name varchar(50), Surname varchar(50)," +
                 "Pathnetic varchar(70), Position varchar(100), PhoneNumber varchar(14)," +
-                "Password int NOT NULL, AccessLevel int NOT NULL, FinResponsible boolean, PRIMARY KEY (ID));", _connection))
+                "Password int NOT NULL, AccessLevel int NOT NULL, FinResponsible boolean,PassportNumber varchar(9),PassportIssueDate date, PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -341,7 +341,7 @@ namespace BuildMaterials.BD
         private Employee GetEmployee(MySqlDataReader reader)
         {
             return new Employee(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
-                reader.GetString(5), reader.GetInt32(6), reader.GetInt32(7), reader.GetBoolean(8));
+                reader.GetString(5),reader.GetString(9),reader.GetDateTime(10), reader.GetInt32(6), reader.GetInt32(7), reader.GetBoolean(8));
         }
 
         public Employee ElementAt(int id)
@@ -366,9 +366,9 @@ namespace BuildMaterials.BD
         public void Add(Employee obj)
         {
             using (MySqlCommand command = new MySqlCommand("INSERT INTO employees " +
-                "(Name, Surname, pathnetic, position, phonenumber, password, AccessLevel, FinResponsible) VALUES" +
+                "(Name, Surname, pathnetic, position, phonenumber, password, AccessLevel, FinResponsible,PassportIssueDate,PassportNumber) VALUES" +
                 $"('{obj.Name}','{obj.SurName}'," +
-                $"'{obj.Pathnetic}','{obj.Position}','{obj.PhoneNumber}',{obj.Password},{obj.AccessLevel},{obj.FinResponsible});", _connection))
+                $"'{obj.Pathnetic}','{obj.Position}','{obj.PhoneNumber}',{obj.Password},{obj.AccessLevel},{obj.FinResponsible},'{obj.PassportIssueDate.Year}-{obj.PassportIssueDate.Month}-{obj.PassportIssueDate.Day}','{obj.PassportNumber}');", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();

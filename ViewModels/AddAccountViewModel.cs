@@ -7,7 +7,7 @@ namespace BuildMaterials.ViewModels
 {
     public class AddAccountViewModel
     {
-        public Models.Account Account { get; set; }
+        public Models.Account Account { get; set; } = new Account();
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
@@ -46,7 +46,6 @@ namespace BuildMaterials.ViewModels
 
         public AddAccountViewModel()
         {
-            Account = new Account();
             Settings = new Settings();
             EmployeeNames = GetEmployeeNames();
         }
