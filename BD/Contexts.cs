@@ -218,9 +218,9 @@ namespace BuildMaterials.BD
             _connection.CloseAsync().Wait();
         }
 
-        public BuildMaterials.Models.Material ElementAt(int id)
+        public Material ElementAt(int id)
         {
-            BuildMaterials.Models.Material material = new BuildMaterials.Models.Material();
+            Material material = new Material();
             using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
             {
                 _connection.OpenAsync().Wait();
@@ -981,7 +981,7 @@ namespace BuildMaterials.BD
                 "ConsigneeAdress varchar(100) not null, Buyer varchar(100) not null," +
                 "CountUnits varchar(20), Count float not null," +
                 "Price float not null, Tax float not null, date date not null," +
-                " PRIMARY KEY (ID));", _connection))
+                "materialid int not null, PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -1008,7 +1008,7 @@ namespace BuildMaterials.BD
         {
             return new Account(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
                 reader.GetString(5), reader.GetString(6), reader.GetString(7),
-                reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11));
+                reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11),App.DBContext.Materials.ElementAt(reader.GetInt32(12)));
         }
 
         public Account ElementAt(int id)
@@ -1034,10 +1034,10 @@ namespace BuildMaterials.BD
         {
             using (MySqlCommand command = new MySqlCommand("INSERT INTO accounts " +
                 "(Seller, ShipperName, ShipperAdress, ConsigneeName, ConsigneeAdress," +
-                "Buyer,CountUnits, Count,Price,Tax,Date) VALUES" +
+                "Buyer,CountUnits, Count,Price,Tax,Date, materialid) VALUES" +
                 $"('{obj.Seller}','{obj.ShipperName}','{obj.ShipperAdress}','{obj.ConsigneeName}'," +
                 $"'{obj.ConsigneeAdress}','{obj.Buyer}','{obj.CountUnits}',{obj.Count},{obj.Price}," +
-                $"{obj.Tax},'{obj.Date!.Value.Year}-{obj.Date!.Value.Month}-{obj.Date!.Value.Day}');", _connection))
+                $"{obj.Tax},'{obj.Date!.Value.Year}-{obj.Date!.Value.Month}-{obj.Date!.Value.Day}',{obj.Material!.ID});", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();

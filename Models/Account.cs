@@ -160,7 +160,29 @@ namespace BuildMaterials.Models
         public float FinalSumm => Summ + TaxSumm;
         public string FinalSummAtString => "Итого: " + (Summ + TaxSumm);
         public string? DateInString => Date?.ToShortDateString();
+        public int MatertialID { get; set; } = -1;
+        public Material Material
+        {
+            get
+            {
+                if (UseBD)
+                {
+                    return App.DBContext.Materials.ElementAt(MatertialID);
+                }
+                return material;
+            }
+            set
+            {
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Account SET MaterialID = {value.ID} WHERE ID ={ID};");
+                }
+                MatertialID = value.ID;
+                material = value;
+            }
+        }
 
+        private Material material;
         private DateTime? date;
         private string? countUnits = string.Empty;
         private string? buyer = string.Empty;
@@ -180,7 +202,7 @@ namespace BuildMaterials.Models
             UseBD = false;
         }
 
-        public Account(int iD, string? seller, string? shipperName, string? shipperAdress, string? consigneeName, string? consigneeAdress, string? buyer, string? countUnits, float count, float price, float tax, DateTime? date)
+        public Account(int iD, string? seller, string? shipperName, string? shipperAdress, string? consigneeName, string? consigneeAdress, string? buyer, string? countUnits, float count, float price, float tax, DateTime? date, Material material)
         {
             UseBD = false;
             ID = iD;
@@ -195,6 +217,7 @@ namespace BuildMaterials.Models
             Price = price;
             Tax = tax;
             Date = date;
+            Material = material;
             UseBD = true;
         }
         private void OnPropertyChanged(string propName)
@@ -208,6 +231,7 @@ namespace BuildMaterials.Models
         }
 
         public bool IsValid => Date != null
+            && Material != null
             && Seller != string.Empty
             && ShipperName != string.Empty
             && ShipperAdress != string.Empty

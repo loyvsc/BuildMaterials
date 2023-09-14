@@ -42,6 +42,7 @@ namespace BuildMaterials.ViewModels
 
         public int SelectedShipperIndex { get; set; } = -1;
         public int SelectedConsigneeIndex { get; set; } = -1;
+        public List<Material> Materials => App.DBContext.Materials.Select("SELECT * FROM Materials;");
 
         public AddAccountViewModel()
         {

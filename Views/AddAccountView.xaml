@@ -40,6 +40,10 @@
             
             <TextBlock Margin="0,5,0,5">Покупатель</TextBlock>
             <TextBox Text="{Binding Account.Buyer}"/>
+
+            <TextBlock Margin="0,5,0,5">Материал</TextBlock>
+            <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding Account.Material}"/>
+
             <TextBlock Margin="0,5,0,5">Количество</TextBlock>
             <TextBox Text="{Binding Account.Count}"/>
             <TextBlock Margin="0,5,0,5">Ед. измерения</TextBlock>

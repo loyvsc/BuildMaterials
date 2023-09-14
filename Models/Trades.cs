@@ -1,8 +1,18 @@
 ﻿using BuildMaterials.BD;
+using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
-    public class Trade : ITable
+    public class NotifyPropertyChangedBase : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        public void OnPropertyChanged(string propName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        }
+    }
+
+    public class Trade : NotifyPropertyChangedBase,ITable
     {
         private readonly bool UseBD;
 
@@ -58,6 +68,8 @@ namespace BuildMaterials.Models
                 {
                     App.DBContext.Query($"UPDATE trades SET Count='{value}' WHERE ID = {ID};");
                 }
+                OnPropertyChanged(nameof(Count));
+                OnPropertyChanged(nameof(Summ));
             }
         }
         public float Price
@@ -70,6 +82,8 @@ namespace BuildMaterials.Models
                 {
                     App.DBContext.Query($"UPDATE trades SET Price='{value}' WHERE ID = {ID};");
                 }
+                OnPropertyChanged(nameof(Price));
+                OnPropertyChanged(nameof(Summ));
             }
         }
 

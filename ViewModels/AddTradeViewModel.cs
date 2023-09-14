@@ -52,7 +52,7 @@ namespace BuildMaterials.ViewModels
                 return fio.ToArray();
             }
         }
-        public Models.Material[] Materials => App.DBContext.Materials.Select("SELECT ID,Name,Count FROM Materials").ToArray();
+        public List<Material> Materials => App.DBContext.Materials.Select("SELECT * FROM Materials");
 
         public Models.Material SelectedMaterial
         {
@@ -60,7 +60,7 @@ namespace BuildMaterials.ViewModels
             set
             {
                 _selMat = value;
-                MaxCountValue = "но не больше " + value.Count;
+                MaxCountValue = ", но не больше " + value.Count;
                 OnPropertyChanged("SelectedMaterial");
             }
         }
