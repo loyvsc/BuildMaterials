@@ -228,6 +228,20 @@
                                 </DataGrid.Columns>
                             </DataGrid>
                         </TabItem>
+                        <TabItem x:Name="materialResponsibleTab" Header="Материально-ответственный отчет">
+                            <DataGrid Grid.Column="1" ItemsSource="{Binding MaterialResponsesList,UpdateSourceTrigger=PropertyChanged}" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedTableItem}" 
+                                      CanUserAddRows="False" IsReadOnly="True" CanUserDeleteRows="False" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" IsReadOnly="True" Binding="{Binding ID}"/>
+                                    <DataGridTextColumn Header="Наименование материала" Binding="{Binding Name}"/>
+                                    <DataGridTextColumn Header="Ед. измерения" Binding="{Binding CountUnits}"/>
+                                    <DataGridTextColumn Header="Приход" Binding="{Binding Prihod}"/>
+                                    <DataGridTextColumn Header="Расход" Binding="{Binding Rashod}"/>
+                                    <DataGridTextColumn Header="Баланс на начало" Binding="{Binding BalanceAtStart}"/>
+                                    <DataGridTextColumn Header="Баланс на конец" Binding="{Binding BalanceAtEnd}"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
                     </TabControl>
                 </Grid>
             </TabItem>

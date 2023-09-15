@@ -19,6 +19,7 @@ namespace BuildMaterials.ViewModels
         private List<TTN> ttns = null!;
         private List<Account> accounts = null!;
         private List<Contract> contracts = null!;
+        private List<MaterialResponse> materialResponses = null!;
 
         public bool CanUserEditEmployeeConf => CurrentEmployee?.AccessLevel == 3;
         public List<Material> MaterialsList
@@ -93,6 +94,15 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged(nameof(ContractsList));
             }
         }
+        public List<MaterialResponse> MaterialResponsesList
+        {
+            get => materialResponses;
+            set
+            {
+                materialResponses = value;
+                OnPropertyChanged(nameof(MaterialResponsesList));
+            }
+        }
 
         public ICommand AboutProgrammCommand => new RelayCommand((sender) => OpenAboutProgram());
         public ICommand ExitCommand => new RelayCommand((sener) => System.Windows.Application.Current.MainWindow.Close());
@@ -156,6 +166,7 @@ namespace BuildMaterials.ViewModels
             TTNList = App.DBContext.TTNs.ToList();
             AccountsList = App.DBContext.Accounts.ToList();
             ContractsList = App.DBContext.Contracts.ToList();
+            MaterialResponsesList = App.DBContext.MaterialResponse.ToList();
 
             IsPrintEnabled = Visibility.Collapsed;
             Settings = new Settings();
@@ -240,6 +251,12 @@ namespace BuildMaterials.ViewModels
                     bool result = false;
                     switch (selectedTab)
                     {
+                        case "materialResponsibleTab":
+                            {
+                                MaterialResponse materialResponse = (MaterialResponse)SelectedTableItem;
+                                result = print.Print(materialResponse);
+                                break;
+                            }
                         case "postavTab":
                             {
                                 Provider selectedProvider = (Provider)SelectedTableItem;
@@ -340,6 +357,17 @@ namespace BuildMaterials.ViewModels
                 if (SelectedTableItem == null) return;
                 switch (selectedTab)
                 {
+                    case "materialResponsibleTab":
+                        {
+                            if (MaterialResponsesList.Count.Equals(0))
+                            {
+                                return;
+                            }
+                            MaterialResponse buf = (MaterialResponse)SelectedTableItem;
+                            App.DBContext.MaterialResponse.Remove(buf);
+                            MaterialResponsesList = App.DBContext.MaterialResponse.ToList();
+                            break;
+                        }
                     case "providersTab":
                         {
                             if (ProvidersList.Count.Equals(0))
@@ -460,6 +488,15 @@ namespace BuildMaterials.ViewModels
         {
             switch (selectedTab)
             {
+                case "materialResponsibleTab":
+                    {
+                        AddMaterialResponseView addMaterial = new AddMaterialResponseView();
+                        if (addMaterial.ShowDialog() == true)
+                        {
+                            MaterialResponsesList = App.DBContext.MaterialResponse.ToList();
+                        }
+                        break;
+                    }
                 case "materialsTab":
                     {
                         AddMaterialView addMaterial = new AddMaterialView();

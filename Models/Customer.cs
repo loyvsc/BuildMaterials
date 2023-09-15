@@ -91,7 +91,11 @@ namespace BuildMaterials.Models
                 }
             }
         }
-        public Employee FinReponseEmployee => App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
+        public Employee FinReponseEmployee
+        {
+            get=> App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
+            set => FinResponseEmployeeID = value.ID;
+        }
 
         private int finRespEmpID = 0;
         private float balEnd = 0;
@@ -102,7 +106,8 @@ namespace BuildMaterials.Models
         private string name = string.Empty;
 
         public MaterialResponse() { }
-        public MaterialResponse(int iD, string name, string countUnits, float balStart, float prihod, float rashod, float balEnd, int finRespId)
+        public MaterialResponse(int iD, string name, string countUnits, float balStart, float prihod,
+            float rashod, float balEnd, int finRespId)
         {
             ID = iD;
             CountUnits = countUnits;
@@ -113,6 +118,11 @@ namespace BuildMaterials.Models
             BalanceAtEnd = balEnd;
             FinResponseEmployeeID = finRespId;
             Name = name;
+        }
+
+        public override string ToString()
+        {
+            return $"Материально-ответственный отчет №{ID}\nМатериально-ответственный сотрудник: {FinReponseEmployee.SurName} {FinReponseEmployee.Name} {FinReponseEmployee.Pathnetic}\nПриход: {prihod}\nРасход: {rashod}\nБаланс на начало: {balStart}\nБаланс на конец: {balEnd}\nНаименование материала: {name}\nЕд. измерения: {countUnits}";
         }
 
         public bool IsValid => BalanceAtStart >= 0 &&

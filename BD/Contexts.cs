@@ -96,9 +96,9 @@ namespace BuildMaterials.BD
             _connection = new MySqlConnection(StaticValues.ConnectionString);
             _connection.OpenAsync().Wait();
             using (MySqlCommand command = new MySqlCommand("CREATE TABLE IF NOT EXISTS materialresponses " +
-                "(ID int not null, Name varchar(100), CountUnits varchar(100), BalanceAtStart float not null, " +
+                "(ID int NOT NULL AUTO_INCREMENT, Name varchar(100), CountUnits varchar(100), BalanceAtStart float not null, " +
                 "Prihod float not null, Rashod float not null, BalanceAtEnd float not null," +
-                "FinResposeEmployeeID int not null, PRIMARY KEY (ID));", _connection))
+                "FinResponseEmployeeID int not null, PRIMARY KEY (ID));", _connection))
             {
                 command.ExecuteNonQueryAsync().Wait();
             }
@@ -185,16 +185,9 @@ namespace BuildMaterials.BD
 
         private MaterialResponse GetMaterialResponse(MySqlDataReader reader)
         {
-            MaterialResponse material = new MaterialResponse();
-            material.ID = reader.GetInt32(0);
-            material.Name = reader.GetString(1);
-            material.BalanceAtStart = reader.GetFloat(2);
-            material.BalanceAtStart = reader.GetFloat(3);
-            material.Prihod = reader.GetFloat(4);
-            material.Rashod = reader.GetFloat(5);
-            material.BalanceAtEnd = reader.GetFloat(6);
-            material.FinResponseEmployeeID = reader.GetInt32(7);
-            material.UseBD = true;
+            MaterialResponse material = new MaterialResponse(reader.GetInt32(0), reader.GetString(1),
+                reader.GetString(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5),
+                reader.GetFloat(6), reader.GetInt32(7));
             return material;
         }
 

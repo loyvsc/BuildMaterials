@@ -161,7 +161,7 @@ namespace BuildMaterials.Models
         public string FinalSummAtString => "Итого: " + (Summ + TaxSumm);
         public string? DateInString => Date?.ToShortDateString();
         public int MatertialID { get; set; } = -1;
-        public Material Material
+        public Material? Material
         {
             get
             {
@@ -173,16 +173,20 @@ namespace BuildMaterials.Models
             }
             set
             {
-                if (UseBD)
+                if (value != null)
                 {
-                    App.DBContext.Query($"UPDATE Account SET MaterialID = {value.ID} WHERE ID ={ID};");
+
+                    MatertialID = value.ID;
+                    material = value;
+                    if (UseBD)
+                    {
+                        App.DBContext.Query($"UPDATE Account SET MaterialID = {value.ID} WHERE ID ={ID};");
+                    }
                 }
-                MatertialID = value.ID;
-                material = value;
             }
         }
 
-        private Material material;
+        private Material? material;
         private DateTime? date;
         private string? countUnits = string.Empty;
         private string? buyer = string.Empty;

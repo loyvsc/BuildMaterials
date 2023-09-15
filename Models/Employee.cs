@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace BuildMaterials.Models
 {
-    public class Employee : ITable
+    public partial class Employee : ITable
     {
         private readonly bool UseBD;
         public int ID { get; set; }
