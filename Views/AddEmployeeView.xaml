@@ -45,7 +45,7 @@
                 <StackPanel>
                     <TextBlock Text="Серия и номер пасспорта"/>
                     <TextBox Text="{Binding Employee.PassportNumber}"/>
-                    <DatePicker Margin="0,5,0,0" SelectedDate="{Binding Employee.PassportIssueDate}"/>
+                    <DatePicker Margin="0,5,0,0" Text="В" SelectedDate="{Binding Employee.PassportIssueDate}"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

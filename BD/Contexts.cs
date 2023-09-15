@@ -37,7 +37,7 @@ namespace BuildMaterials.BD
             InitializeDatabase();
             if (Employees?.Count() == 0)
             {
-                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234","BM3132131",DateTime.Now, 0, 3));
+                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", "BM3132131", DateTime.Now, 0, 3));
             }
         }
 
@@ -341,25 +341,22 @@ namespace BuildMaterials.BD
         private Employee GetEmployee(MySqlDataReader reader)
         {
             return new Employee(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
-                reader.GetString(5),reader.GetString(9),reader.GetDateTime(10), reader.GetInt32(6), reader.GetInt32(7), reader.GetBoolean(8));
+                reader.GetString(5), reader.GetString(9), reader.GetDateTime(10), reader.GetInt32(6), reader.GetInt32(7), reader.GetBoolean(8));
         }
 
         public Employee ElementAt(int id)
         {
             Employee employee = null!;
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+            _connection.OpenAsync().Wait();
+            using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE id={id};", _connection))
             {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE id={id};", _connection))
-                {
-                    using (MySqlDataReader reader = command.ExecuteMySqlReaderAsync())
-                        while (reader.Read())
-                        {
-                            employee = GetEmployee(reader);
-                        }
-                }
-                _connection.CloseAsync().Wait();
+                using (MySqlDataReader reader = command.ExecuteMySqlReaderAsync())
+                    while (reader.Read())
+                    {
+                        employee = GetEmployee(reader);
+                    }
             }
+            _connection.CloseAsync().Wait();
             return employee;
         }
 
@@ -368,7 +365,7 @@ namespace BuildMaterials.BD
             using (MySqlCommand command = new MySqlCommand("INSERT INTO employees " +
                 "(Name, Surname, pathnetic, position, phonenumber, password, AccessLevel, FinResponsible,PassportIssueDate,PassportNumber) VALUES" +
                 $"('{obj.Name}','{obj.SurName}'," +
-                $"'{obj.Pathnetic}','{obj.Position}','{obj.PhoneNumber}',{obj.Password},{obj.AccessLevel},{obj.FinResponsible},'{obj.PassportIssueDate.Year}-{obj.PassportIssueDate.Month}-{obj.PassportIssueDate.Day}','{obj.PassportNumber}');", _connection))
+                $"'{obj.Pathnetic}','{obj.Position}','{obj.PhoneNumber}',{obj.Password},{obj.AccessLevel},{obj.FinResponsible},'{obj.PassportIssueDate?.Year}-{obj.PassportIssueDate?.Month}-{obj.PassportIssueDate?.Day}','{obj.PassportNumber}');", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();
@@ -399,20 +396,17 @@ namespace BuildMaterials.BD
         public List<Employee> Search(string text)
         {
             List<Employee> employees = new List<Employee>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+            _connection.OpenAsync().Wait();
+            using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE " +
+                $"CONCAT(name,' ', surname,' ', pathnetic,' ',position,' ',phonenumber) like '%{text}%';", _connection))
             {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand($"SELECT * FROM Employees WHERE " +
-                    $"CONCAT(name,' ', surname,' ', pathnetic,' ',position,' ',phonenumber) like '%{text}%';", _connection))
+                MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
+                while (reader.Read())
                 {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        employees.Add(GetEmployee(reader));
-                    }
+                    employees.Add(GetEmployee(reader));
                 }
-                _connection.CloseAsync().Wait();
             }
+            _connection.CloseAsync().Wait();
             return employees;
         }
 
@@ -424,19 +418,16 @@ namespace BuildMaterials.BD
         public List<Employee> Select(string query)
         {
             List<Employee> employees = new List<Employee>(64);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+            _connection.OpenAsync().Wait();
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
             {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand command = new MySqlCommand(query, _connection))
+                MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
+                while (reader.Read())
                 {
-                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
-                    while (reader.Read())
-                    {
-                        employees.Add(GetEmployee(reader));
-                    }
+                    employees.Add(GetEmployee(reader));
                 }
-                _connection.CloseAsync().Wait();
             }
+            _connection.CloseAsync().Wait();
             return employees;
         }
     }
@@ -1008,7 +999,7 @@ namespace BuildMaterials.BD
         {
             return new Account(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
                 reader.GetString(5), reader.GetString(6), reader.GetString(7),
-                reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11),App.DBContext.Materials.ElementAt(reader.GetInt32(12)));
+                reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11), App.DBContext.Materials.ElementAt(reader.GetInt32(12)));
         }
 
         public Account ElementAt(int id)

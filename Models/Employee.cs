@@ -80,7 +80,7 @@ namespace BuildMaterials.Models
             }
         }
 
-        public string? DateInString => PassportIssueDate.ToShortDateString();
+        public string? DateInString => PassportIssueDate?.ToShortDateString();
         public bool FinResponsible
         {
             get => finResponsible;
@@ -130,7 +130,7 @@ namespace BuildMaterials.Models
             return regex.IsMatch(passportNumber);
         }
 
-        public DateTime PassportIssueDate
+        public DateTime? PassportIssueDate
         {
             get => passportIssueDate;
             set
@@ -143,7 +143,7 @@ namespace BuildMaterials.Models
             }
         }
 
-        private DateTime passportIssueDate = DateTime.Now;
+        private DateTime? passportIssueDate;
         private string passportNumber = string.Empty;
         private string? name;
         private string? surname;
