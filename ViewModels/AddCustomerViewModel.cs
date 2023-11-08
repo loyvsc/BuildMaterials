@@ -5,7 +5,7 @@ namespace BuildMaterials.ViewModels
 {
     public class AddCustomerViewModel
     {
-        public Models.Customer Customer { get; set; }
+        public Models.Seller Customer { get; set; }
 
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
@@ -14,7 +14,7 @@ namespace BuildMaterials.ViewModels
 
         public AddCustomerViewModel()
         {
-            Customer = new Models.Customer();
+            Customer = new Models.Seller();
         }
 
         public AddCustomerViewModel(Window window) : this()
@@ -26,7 +26,7 @@ namespace BuildMaterials.ViewModels
         {
             if (Customer.IsValid)
             {
-                App.DBContext.Customers.Add(Customer);
+                App.DBContext.Sellers.Add(Customer);
                 _window.DialogResult = true;
                 return;
             }

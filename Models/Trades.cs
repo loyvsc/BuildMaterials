@@ -12,12 +12,12 @@ namespace BuildMaterials.Models
         }
     }
 
-    public class Trade : NotifyPropertyChangedBase,ITable
+    public class Trade : NotifyPropertyChangedBase, ITable
     {
         private readonly bool UseBD;
 
         public int ID { get; set; }
-        public DateTime? Date
+        public DateTime Date
         {
             get => date;
             set
@@ -25,40 +25,61 @@ namespace BuildMaterials.Models
                 date = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET Date='{date!.Value.Year}-{date!.Value.Month}-{date!.Value.Day}' WHERE ID = {ID};");
+                    App.DBContext.Query($"UPDATE trades SET Date='{date.ToMySQLDate()}' WHERE ID = {ID};");
                 }
             }
         }
         public string? DateInString
         {
-            get=> Date?.ToShortDateString();
+            get => Date.ToShortDateString();
             set => Date = Convert.ToDateTime(value);
         }
-        public string? SellerFio
+
+        public int? SellerID
         {
-            get => sellerFio;
+            get => sellerId;
             set
             {
-                sellerFio = value;
+                sellerId = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET SellerFio='{value}' WHERE ID = {ID};");
+                    App.DBContext.Query($"UPDATE trades SET SellerID={value} WHERE ID = {ID};");
+                    OnPropertyChanged(nameof(SellerID));
+                    OnPropertyChanged(nameof(Seller));
                 }
             }
         }
-        public string? MaterialName
+
+        public Employee? Seller
         {
-            get => materialName;
+            get => SellerID != null ? App.DBContext.Employees.Select($"SELECT * FROM employees WHERE ID = {SellerID};")[0] : null;
             set
             {
-                materialName = value;
-                if (UseBD)
+                if (value != null)
                 {
-                    App.DBContext.Query($"UPDATE trades SET MaterialName='{value}' WHERE ID = {ID};");
+                    SellerID = value.ID;
+                    OnPropertyChanged(nameof(Seller));
                 }
             }
         }
-        public float Count
+        public int? MaterialID
+        {
+            get => matId;
+            set
+            {
+                matId = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE trades SET MaterialID={value} WHERE ID = {ID};");
+                    OnPropertyChanged(nameof(MaterialID));
+                    OnPropertyChanged(nameof(Seller));
+                }
+            }
+        }
+
+        public Material? Material => App.DBContext.Materials.Select($"SELECT * FROM Materials WHERE ID={MaterialID}")[0];
+
+        public float? Count
         {
             get => count;
             set
@@ -66,13 +87,13 @@ namespace BuildMaterials.Models
                 count = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET Count='{value}' WHERE ID = {ID};");
+                    App.DBContext.Query($"UPDATE trades SET Count={value} WHERE ID = {ID};");
                 }
                 OnPropertyChanged(nameof(Count));
                 OnPropertyChanged(nameof(Summ));
             }
         }
-        public float Price
+        public float? Price
         {
             get => price;
             set
@@ -80,44 +101,59 @@ namespace BuildMaterials.Models
                 price = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET Price='{value}' WHERE ID = {ID};");
+                    App.DBContext.Query($"UPDATE trades SET Price={value} WHERE ID = {ID};");
                 }
                 OnPropertyChanged(nameof(Price));
                 OnPropertyChanged(nameof(Summ));
             }
         }
 
-        public float Summ => Count * Price;
-        
-        private string? sellerFio = string.Empty;
-        private string? materialName = string.Empty;
-        private float count = 0;
-        private float price = 0;
-        private DateTime? date;
+        public int PayTypeID
+        {
+            get => pattypeid;
+            set
+            {
+                pattypeid = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE trades SET PayTypeID={value} WHERE ID = {ID};");
+                }
+                OnPropertyChanged(nameof(Price));
+                OnPropertyChanged(nameof(Summ));
+            }
+        }
+
+        public float? Summ => Count * Price;
+
+        private int? sellerId = -1;
+        private float? count = 0;
+        private float? price = 0;
+        private DateTime date;
+        private int? matId = -1;
+        private int pattypeid;
 
         public Trade()
         {
             UseBD = false;
         }
 
-        public Trade(int iD, DateTime? date, string sellerFio, string materialName, float count, float price)
+        public Trade(int iD, DateTime date, int? sellerid, int? materialId, float? count, float? price,int paytypeid)
         {
             UseBD = true;
-            this.ID = iD;
+            ID = iD;
             this.date = date;
-            this.sellerFio = sellerFio;
-            this.materialName = materialName;
+            this.sellerId = sellerid;
+            this.matId = materialId;
             this.count = count;
             this.price = price;
+            this.pattypeid = paytypeid;
         }
 
-        public bool IsValid => Date != null
-            && SellerFio != string.Empty
-            && MaterialName != string.Empty;
+        public bool IsValid =>
+            sellerId != -1
+            && matId != -1;
 
-        public override string ToString()
-        {
-            return $"Товарооборот №{ID} от {DateInString}\nПродавец: {SellerFio}\nМатериал: {MaterialName}\nКоличество: {Count}\nЦена: {Price}";
-        }
+        public override string ToString() =>
+            $"Товарооборот №{ID} от {DateInString}\nПродавец: {Seller}\nМатериал: {Material?.Name}\nКоличество: {Count}\nЦена: {Price}";
     }
 }

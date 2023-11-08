@@ -34,7 +34,7 @@
             <TextBox Text="{Binding MaterialResponse.BalanceAtEnd}"/>
 
             <TextBlock Text="Ответственный сотрудник"/>
-            <ComboBox ItemsSource="{Binding FinResponsibleEmployees}" SelectedValue="{Binding MaterialResponse.FinReponseEmployee}"/>
+            <ComboBox ItemsSource="{Binding FinResponsibleEmployees}" SelectedValue="{Binding SelectedFinResponEmployee}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
             <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding AddCommand}">Добавить</Button>

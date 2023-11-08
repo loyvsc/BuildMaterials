@@ -11,16 +11,7 @@ namespace BuildMaterials.ViewModels
 {
     public class MainWindowViewModel : NotifyPropertyChangedBase
     {
-        private List<Material> materials = null!;
-        private List<Employee> employees = null!;
-        private List<Customer> customers = null!;
-        private List<Provider> providers = null!;
-        private List<Trade> trades = null!;
-        private List<TTN> ttns = null!;
-        private List<Account> accounts = null!;
-        private List<Contract> contracts = null!;
-        private List<MaterialResponse> materialResponses = null!;
-
+        #region Lists
         public bool CanUserEditEmployeeConf => CurrentEmployee?.AccessLevel == 3;
         public List<Material> MaterialsList
         {
@@ -40,22 +31,13 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged(nameof(EmployeesList));
             }
         }
-        public List<Customer> CustomersList
+        public List<Seller> SellersList
         {
-            get => customers;
+            get => sellers;
             set
             {
-                customers = value;
-                OnPropertyChanged(nameof(CustomersList));
-            }
-        }
-        public List<Provider> ProvidersList
-        {
-            get => providers;
-            set
-            {
-                providers = value;
-                OnPropertyChanged(nameof(ProvidersList));
+                sellers = value;
+                OnPropertyChanged(nameof(SellersList));
             }
         }
         public List<Trade> TradesList
@@ -103,16 +85,36 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged(nameof(MaterialResponsesList));
             }
         }
+        public List<Seller> ProvidersList
+        {
+            get => provlist;
+            set
+            {
+                provlist = value;
+                OnPropertyChanged(nameof(ProvidersList));
+            }
+        }
+        public List<Seller> CustomersList
+        {
+            get => custlist;
+            set
+            {
+                custlist = value;
+                OnPropertyChanged(nameof(CustomersList));
+            }
+        }
+        #endregion
 
+        #region Commands
         public ICommand AboutProgrammCommand => new RelayCommand((sender) => OpenAboutProgram());
         public ICommand ExitCommand => new RelayCommand((sener) => System.Windows.Application.Current.MainWindow.Close());
         public ICommand SettingsCommand => new RelayCommand((sener) => OpenSettings());
         public ICommand AddRowCommand => new RelayCommand((sender) => AddRow());
         public ICommand DeleteRowCommand => new RelayCommand((sender) => DeleteRow());
         public ICommand PrintCommand => new RelayCommand((sender) => PrintContract());
+        #endregion
 
         public bool CanViewConfidentional => CurrentEmployee?.AccessLevel == 3;
-        private string _searchtext = string.Empty;
         public string SearchText
         {
             get => _searchtext;
@@ -127,7 +129,6 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        private Employee? currentEmployee;
         public Employee? CurrentEmployee
         {
             get => currentEmployee;
@@ -151,17 +152,35 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged(nameof(IsPrintEnabled));
             }
         }
+        public ITable? SelectedTableItem { get; set; }
 
+        #region Private vars
         private Visibility isPrintEnabled;
         private string selectedTab = string.Empty;
+        private List<Seller> provlist;
+        private List<Seller> custlist;
+        private string _searchtext = string.Empty;
+        private Employee? currentEmployee;
+        private List<Material> materials = null!;
+        private List<Employee> employees = null!;
+        private List<Seller> customers = null!;
+        private List<Seller> sellers = null!;
+        private List<Trade> trades = null!;
+        private List<TTN> ttns = null!;
+        private List<Account> accounts = null!;
+        private List<Contract> contracts = null!;
+        private List<MaterialResponse> materialResponses = null!;
+        #endregion
 
+        #region Constructors
         public MainWindowViewModel()
         {
             CurrentEmployee = new Employee();
+            CustomersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE;");
+            ProvidersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = false;");
             MaterialsList = App.DBContext.Materials.ToList();
             EmployeesList = App.DBContext.Employees.ToList();
-            CustomersList = App.DBContext.Customers.ToList();
-            ProvidersList = App.DBContext.Providers.ToList();
+            SellersList = App.DBContext.Sellers.ToList();
             TradesList = App.DBContext.Trades.ToList();
             TTNList = App.DBContext.TTNs.ToList();
             AccountsList = App.DBContext.Accounts.ToList();
@@ -176,67 +195,7 @@ namespace BuildMaterials.ViewModels
         {
             CurrentEmployee = employee;
         }
-
-        public void Search(string text)
-        {
-            try
-            {
-                if (text.Equals(string.Empty))
-                {
-                    switch (selectedTab)
-                    {
-                        case "materialsTab":
-                            {
-                                MaterialsList = App.DBContext.Materials.ToList();
-                                break;
-                            }
-                        case "employersTab":
-                            {
-                                EmployeesList = App.DBContext.Employees.ToList();
-                                break;
-                            }
-                        case "customersTab":
-                            {
-                                CustomersList = App.DBContext.Customers.ToList();
-                                break;
-                            }
-                        case "postavTab":
-                            {
-                                ProvidersList = App.DBContext.Providers.ToList();
-                                break;
-                            }
-                    }
-                    return;
-                }
-                switch (selectedTab)
-                {
-                    case "materialsTab":
-                        {
-                            MaterialsList = App.DBContext.Materials.Search(text);
-                            break;
-                        }
-                    case "employersTab":
-                        {
-                            EmployeesList = App.DBContext.Employees.Search(text);
-                            break;
-                        }
-                    case "customersTab":
-                        {
-                            CustomersList = App.DBContext.Customers.Search(text);
-                            break;
-                        }
-                    case "postavTab":
-                        {
-                            ProvidersList = App.DBContext.Providers.Search(text);
-                            break;
-                        }
-                }
-            }
-            catch (System.ArgumentNullException)
-            {
-                return;
-            }
-        }
+        #endregion
 
         private void PrintContract()
         {
@@ -259,7 +218,7 @@ namespace BuildMaterials.ViewModels
                             }
                         case "postavTab":
                             {
-                                Provider selectedProvider = (Provider)SelectedTableItem;
+                                Seller selectedProvider = (Seller)SelectedTableItem;
                                 result = print.Print(selectedProvider);
                                 break;
                             }
@@ -301,7 +260,7 @@ namespace BuildMaterials.ViewModels
                             }
                         case "customersTab":
                             {
-                                Customer selected = (Customer)SelectedTableItem;
+                                Seller selected = (Seller)SelectedTableItem;
                                 result = print.Print(selected);
                                 break;
                             }
@@ -322,24 +281,30 @@ namespace BuildMaterials.ViewModels
             }
         }
 
+        #region ApplicationFunctions
         private void OpenAboutProgram()
         {
             AboutProgramView aboutWindow = new AboutProgramView();
             aboutWindow.ShowDialog();
         }
-
         private void OpenSettings()
         {
             SettingsView settingsWindow = new SettingsView();
             settingsWindow.ShowDialog();
         }
+        public void ExitFromProgramm(CancelEventArgs e)
+        {
+            MessageBoxResult result = System.Windows.MessageBox.Show("Выйти из программы?", "АРМ Менеджера Строительной Компании", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.No)
+            {
+                e.Cancel = true;
+            }
+        }
+        #endregion
 
         public void OnTabChanged(SelectionChangedEventArgs e)
         {
-            if (e.AddedItems.Count.Equals(0))
-            {
-                return;
-            }
+            if (e.AddedItems.Count == 0) return;
             if (e.AddedItems[0] is TabItem)
             {
                 string tabName = (e.AddedItems[0] as TabItem)!.Name;
@@ -347,8 +312,6 @@ namespace BuildMaterials.ViewModels
                 SearchText = string.Empty;
             }
         }
-
-        public ITable? SelectedTableItem { get; set; }
 
         private void DeleteRow()
         {
@@ -370,13 +333,13 @@ namespace BuildMaterials.ViewModels
                         }
                     case "providersTab":
                         {
-                            if (ProvidersList.Count.Equals(0))
+                            if (SellersList.Count.Equals(0))
                             {
                                 return;
                             }
-                            Provider buf = (Provider)SelectedTableItem;
-                            App.DBContext.Providers.Remove(buf);
-                            ProvidersList = App.DBContext.Providers.ToList();
+                            Seller buf = (Seller)SelectedTableItem;
+                            App.DBContext.Sellers.Remove(buf);
+                            SellersList = App.DBContext.Sellers.ToList();
                             break;
                         }
                     case "materialsTab":
@@ -412,20 +375,20 @@ namespace BuildMaterials.ViewModels
                             {
                                 return;
                             }
-                            Customer buf = (Customer)SelectedTableItem;
-                            App.DBContext.Customers.Remove(buf);
-                            CustomersList = App.DBContext.Customers.ToList();
+                            Seller buf = (Seller)SelectedTableItem;
+                            App.DBContext.Sellers.Remove(buf);
+                            CustomersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE");
                             break;
                         }
                     case "postavTab":
                         {
-                            if (ProvidersList.Count.Equals(0))
+                            if (SellersList.Count.Equals(0))
                             {
                                 return;
                             }
-                            Provider buf = (Provider)SelectedTableItem;
-                            App.DBContext.Providers.Remove(buf);
-                            ProvidersList = App.DBContext.Providers.ToList();
+                            Seller buf = (Seller)SelectedTableItem;
+                            App.DBContext.Sellers.Remove(buf);
+                            SellersList = App.DBContext.Sellers.ToList();
                             break;
                         }
                     case "uchetTab":
@@ -520,7 +483,7 @@ namespace BuildMaterials.ViewModels
                         AddCustomerView add = new AddCustomerView();
                         if (add.ShowDialog() == true)
                         {
-                            CustomersList = App.DBContext.Customers.ToList();
+                            CustomersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER == TRUE;");
                         }
                         break;
                     }
@@ -529,7 +492,7 @@ namespace BuildMaterials.ViewModels
                         AddProviderView add = new AddProviderView();
                         if (add.ShowDialog() == true)
                         {
-                            ProvidersList = App.DBContext.Providers.ToList();
+                            ProvidersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER == FALSE;");
                         }
                         break;
                     }
@@ -544,7 +507,7 @@ namespace BuildMaterials.ViewModels
                     }
                 case "ttnTab":
                     {
-                        AddTTNView add = new AddTTNView(ProvidersList);
+                        AddTTNView add = new AddTTNView();
                         if (add.ShowDialog() == true)
                         {
                             TTNList = App.DBContext.TTNs.ToList();
@@ -571,14 +534,66 @@ namespace BuildMaterials.ViewModels
                     }
             }
         }
-
-        public void ExitFromProgramm(CancelEventArgs e)
+        public void Search(string text)
         {
-            MessageBoxResult result = System.Windows.MessageBox.Show("Выйти из программы?", "АРМ Менеджера Строительной Компании", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.No)
+            try
             {
-                e.Cancel = true;
+                if (text.Equals(string.Empty))
+                {
+                    switch (selectedTab)
+                    {
+                        case "materialsTab":
+                            {
+                                MaterialsList = App.DBContext.Materials.ToList();
+                                break;
+                            }
+                        case "employersTab":
+                            {
+                                EmployeesList = App.DBContext.Employees.ToList();
+                                break;
+                            }
+                        case "customersTab":
+                            {
+                                SellersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE;");
+                                break;
+                            }
+                        case "postavTab":
+                            {
+                                SellersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = false;");
+                                break;
+                            }
+                    }
+                    return;
+                }
+                switch (selectedTab)
+                {
+                    case "materialsTab":
+                        {
+                            MaterialsList = App.DBContext.Materials.Search(text);
+                            break;
+                        }
+                    case "employersTab":
+                        {
+                            EmployeesList = App.DBContext.Employees.Search(text);
+                            break;
+                        }
+                    case "customersTab":
+                        {
+                            SellersList = App.DBContext.Sellers.Search(text);
+                            break;
+                        }
+                    case "postavTab":
+                        {
+                            SellersList = App.DBContext.Sellers.Search(text);
+                            break;
+                        }
+                }
+            }
+            catch (System.ArgumentNullException)
+            {
+                return;
             }
         }
+
     }
 }

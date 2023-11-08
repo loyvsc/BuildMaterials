@@ -41,7 +41,7 @@
             <TextBlock Margin="0,0,0,5">Дата</TextBlock>
             <DatePicker SelectedDate="{Binding TTN.Date}"/>
             <TextBlock Margin="0,5,0,5">Наименование материала</TextBlock>
-            <ComboBox ItemsSource="{Binding MaterialNames}" SelectedValue="{Binding TTN.MaterialName}"/>
+            <ComboBox ItemsSource="{Binding Materials}" SelectedValue="{Binding TTN.Material}"/>
             <TextBlock Margin="0,5,0,5">Масса</TextBlock>
             <TextBox Text="{Binding TTN.Weight}"/>
             <TextBlock Margin="0,5,0,5">Ед. измерения</TextBlock>

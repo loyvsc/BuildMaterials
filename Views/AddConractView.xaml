@@ -25,16 +25,16 @@
             <ComboBox ItemsSource="{Binding EmployeeNames}" SelectedValue="{Binding Contract.Buyer}"/>
 
             <TextBlock Margin="0,5,0,5">Наименование материала</TextBlock>
-            <ComboBox ItemsSource="{Binding MaterialNames}" SelectedValue="{Binding Contract.MaterialName}"/>
+            <ComboBox ItemsSource="{Binding Materials}" SelectedValue="{Binding Contract.Material}"/>
 
             <TextBlock Margin="0,5,0,5">Количество</TextBlock>
-            <TextBox Text="{Binding Contract.Count}"/>
+            <TextBox Text="{Binding Contract.Count, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Margin="0,5,0,5">Ед. измерения</TextBlock>
-            <TextBox Text="{Binding Contract.CountUnits}"/>
+            <TextBox Text="{Binding Contract.CountUnits, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Margin="0,5,0,5">Стоимость за единицу</TextBlock>
-            <TextBox Text="{Binding Contract.Price}"/>
+            <TextBox Text="{Binding Contract.Price, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Margin="0,5,0,0">Сумма: <TextBlock Text="{Binding Contract.Summ}"/></TextBlock>
         </StackPanel>

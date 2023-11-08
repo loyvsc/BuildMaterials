@@ -2,23 +2,25 @@
 
 namespace BuildMaterials.Models
 {
-    public class MaterialResponse : ITable
+    public class MaterialResponse : NotifyPropertyChangedBase, ITable
     {
         public bool UseBD;
         public int ID { get; set; }
 
-        public string Name
+        public int MaterialID
         {
-            get => name;
+            get => matId;
             set
             {
-                name = value;
+                matId = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET Name = '{value}' WHERE ID ={ID};");
+                    App.DBContext.Query($"UPDATE MaterialResponses SET MaterialID = {value} WHERE ID ={ID};");
                 }
             }
         }
+        private int matId;
+        public Material? Material => App.DBContext.Materials.ElementAt(MaterialID);
         public string CountUnits
         {
             get => countUnits;
@@ -87,17 +89,26 @@ namespace BuildMaterials.Models
                 finRespEmpID = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET FinResponseEmployeeID = '{value}' WHERE ID ={ID};");
+                    App.DBContext.Query($"UPDATE MaterialResponses SET FinResponseEmployeeID = '{value}' WHERE ID = {ID};");
+                }
+                OnPropertyChanged(nameof(FinResponseEmployeeID));
+                OnPropertyChanged(nameof(FinReponseEmployee));
+            }
+        }
+        public Employee? FinReponseEmployee
+        {
+            get => App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
+            set
+            {
+                if (value != null)
+                {
+                    FinResponseEmployeeID = value.ID;
+                    OnPropertyChanged(nameof(FinReponseEmployee));
                 }
             }
         }
-        public Employee FinReponseEmployee
-        {
-            get=> App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
-            set => FinResponseEmployeeID = value.ID;
-        }
 
-        private int finRespEmpID = 0;
+        private int finRespEmpID = -1;
         private float balEnd = 0;
         private float rashod = 0;
         private float prihod = 0;
@@ -105,10 +116,14 @@ namespace BuildMaterials.Models
         private string countUnits = string.Empty;
         private string name = string.Empty;
 
-        public MaterialResponse() { }
-        public MaterialResponse(int iD, string name, string countUnits, float balStart, float prihod,
+        public MaterialResponse()
+        {
+            UseBD = false;
+        }
+        public MaterialResponse(int iD, int matId, string countUnits, float balStart, float prihod,
             float rashod, float balEnd, int finRespId)
         {
+            UseBD = true;
             ID = iD;
             CountUnits = countUnits;
             BalanceAtStart = balStart;
@@ -117,19 +132,17 @@ namespace BuildMaterials.Models
             Rashod = rashod;
             BalanceAtEnd = balEnd;
             FinResponseEmployeeID = finRespId;
-            Name = name;
+            MaterialID = matId;
         }
 
-        public override string ToString()
-        {
-            return $"Материально-ответственный отчет №{ID}\nМатериально-ответственный сотрудник: {FinReponseEmployee.SurName} {FinReponseEmployee.Name} {FinReponseEmployee.Pathnetic}\nПриход: {prihod}\nРасход: {rashod}\nБаланс на начало: {balStart}\nБаланс на конец: {balEnd}\nНаименование материала: {name}\nЕд. измерения: {countUnits}";
-        }
+        public override string ToString() =>
+            $"Материально-ответственный отчет №{ID}\nМатериально-ответственный сотрудник: {FinReponseEmployee.SurName} {FinReponseEmployee.Name} {FinReponseEmployee.Pathnetic}\nПриход: {prihod}\nРасход: {rashod}\nБаланс на начало: {balStart}\nБаланс на конец: {balEnd}\nНаименование материала: {name}\nЕд. измерения: {countUnits}";
 
         public bool IsValid => BalanceAtStart >= 0 &&
-             Prihod >= 0 && Rashod >= 0;
+             Prihod >= 0 && Rashod >= 0 && FinResponseEmployeeID != -1 && MaterialID != -1;
     }
 
-    public class Customer : ITable
+    public class Seller : ITable
     {
         public bool UseBD;
         public int ID { get; set; }
@@ -141,7 +154,7 @@ namespace BuildMaterials.Models
                 companyName = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET CompanyName ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET CompanyName ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -153,7 +166,7 @@ namespace BuildMaterials.Models
                 adress = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET Adress ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET Adress ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -165,7 +178,7 @@ namespace BuildMaterials.Models
                 companyPerson = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET CompanyPerson ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET CompanyPerson ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -177,7 +190,7 @@ namespace BuildMaterials.Models
                 companyPhone = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET CompanyPhone ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET CompanyPhone ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -189,7 +202,7 @@ namespace BuildMaterials.Models
                 bank = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET Bank ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET Bank ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -201,7 +214,7 @@ namespace BuildMaterials.Models
                 bankProp = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET BankProp ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET BankProp ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -213,12 +226,26 @@ namespace BuildMaterials.Models
                 unp = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Customers SET UNP ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Sellers SET UNP ='{value}' WHERE ID={ID};");
+                }
+            }
+        }
+
+        public bool IsCustomer
+        {
+            get => isCustomer;
+            set
+            {
+                isCustomer = value;
+                if (UseBD)
+                {
+                    App.DBContext.Query($"UPDATE Sellers SET IsCustomer ={value} WHERE ID={ID};");
                 }
             }
         }
 
         private string? companyName = string.Empty;
+        private bool isCustomer;
         private string? adress = string.Empty;
         private string? companyPerson = string.Empty;
         private string? companyPhone = string.Empty;
@@ -226,12 +253,13 @@ namespace BuildMaterials.Models
         private string? bankProp = string.Empty;
         private string? unp = string.Empty;
 
-        public Customer()
+        public Seller(bool isCustomer = false)
         {
             UseBD = false;
+            IsCustomer = isCustomer;
         }
 
-        public Customer(int iD, string? companyName, string? adress, string? companyPerson, string? companyPhone, string? bank, string? bankProp, string? uNP)
+        public Seller(int iD, string? companyName, string? adress, string? companyPerson, string? companyPhone, string? bank, string? bankProp, string? uNP, bool isCustomer)
         {
             UseBD = false;
             ID = iD;
@@ -243,6 +271,7 @@ namespace BuildMaterials.Models
             BankProp = bankProp;
             UNP = uNP;
             UseBD = true;
+            IsCustomer = isCustomer;
         }
 
         public bool IsValid =>
@@ -254,24 +283,10 @@ namespace BuildMaterials.Models
             BankProp != string.Empty &&
             UNP != string.Empty;
 
-        public override string ToString()
-        {
-            return CompanyName!;
-        }
+        public override string ToString() => CompanyName!;
 
-        public string AsString()
-        {
-            return $"Заказчик №{ID}\nКомпания: {CompanyName}\nАдрес расположения: {Adress}\nПредставитель: {CompanyPerson} (контактный номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
-        }
-
-        public static explicit operator Customer(Provider v)
-        {
-            return new Customer(0, v.CompanyName, v.Adress, v.CompanyPerson, v.CompanyPhone, v.Bank, v.BankProp, v.UNP);
-        }
-
-        public static explicit operator Customer(List<Provider> v)
-        {
-            throw new NotImplementedException();
-        }
+        //TODO
+        public string AsString() =>
+            $"Заказчик №{ID}\nКомпания: {CompanyName}\nАдрес расположения: {Adress}\nПредставитель: {CompanyPerson} (контактный номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
     }
 }

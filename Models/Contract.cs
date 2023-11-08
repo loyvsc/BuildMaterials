@@ -1,5 +1,4 @@
 ﻿using BuildMaterials.BD;
-using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
@@ -31,15 +30,29 @@ namespace BuildMaterials.Models
                 }
             }
         }
-        public string? MaterialName
+        public int MaterialID
         {
-            get => materialName;
+            get => matid;
             set
             {
-                materialName = value;
+                matid = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET MaterialName ='{value}' WHERE ID={ID};");
+                    App.DBContext.Query($"UPDATE Contracts SET MaterialID ={value} WHERE ID={ID};");
+                }
+                OnPropertyChanged(nameof(Material));
+                OnPropertyChanged(nameof(MaterialID));
+            }
+        }
+        public Material? Material
+        {
+            get => App.DBContext.Materials.ElementAt(MaterialID);
+            set
+            {
+                if (value != null)
+                {
+                    MaterialID = value.ID;
+                    OnPropertyChanged(nameof(Material));
                 }
             }
         }
@@ -100,25 +113,25 @@ namespace BuildMaterials.Models
 
         private DateTime? date;
         private string? countUnits = string.Empty;
-        private string? materialName = string.Empty;
         private string? seller = string.Empty;
         private string? buyer = string.Empty;
         private float count = 0;
-        private float price = 0;        
+        private float price = 0;
+        private int matid = -1;
 
         public Contract()
         {
             UseBD = false;
         }
 
-        public Contract(int iD, string? seller, string? buyer, string? materialName, float count,
+        public Contract(int iD, string? seller, string? buyer, int matid, float count,
             string? countUnits, float price, DateTime? date)
         {
             UseBD = false;
             ID = iD;
             Seller = seller;
             Buyer = buyer;
-            MaterialName = materialName;
+            MaterialID = matid;
             Count = count;
             CountUnits = countUnits;
             Price = price;
@@ -128,7 +141,7 @@ namespace BuildMaterials.Models
 
         public override string ToString()
         {
-            return $"Договор купли-продажи #{ID} от {DateInString}\n\nПокупатель: {Buyer}\nПродавец: {Seller}\nТовар \"{MaterialName}\" в количестве {Count} {CountUnits}.\nЦена за единицу ({CountUnits}): {Price}.\nСумма: {Summ}.\n\n               {Seller}\n\n               {Buyer}";
+            return $"Договор купли-продажи #{ID} от {DateInString}\nПокупатель: {Buyer}\nПродавец: {Seller}\nТовар \"{Material.Name}\" в количестве {Count} {CountUnits}.\nЦена за единицу ({CountUnits}): {Price}.\nСумма: {Summ}.\n\n               {Seller}\n\n               {Buyer}";
         }
 
         public bool IsValid => Date != null;

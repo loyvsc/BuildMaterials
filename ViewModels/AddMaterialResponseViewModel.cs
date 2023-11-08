@@ -6,14 +6,25 @@ namespace BuildMaterials.ViewModels
 {
     public class AddMaterialResponseViewModel : NotifyPropertyChangedBase
     {
-        private readonly Window? _window;
+        private readonly Window _window;
         public MaterialResponse MaterialResponse { get; set; }
         public Material? SelectedMaterial { get; set; }
+        public Employee? SelectedFinResponEmployee
+        {
+            get => finrespempl;
+            set
+            {
+                finrespempl = value;
+                OnPropertyChanged(nameof(SelectedFinResponEmployee));
+            }
+        }
         public ICommand CancelCommand => new RelayCommand((sender) => _window?.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
         public List<Material> Materials => App.DBContext.Materials.ToList();
         public List<Employee> FinResponsibleEmployees => App.DBContext.Employees.Select("SELECT * FROM Employees WHERE FinResponsible = 1");
+
+        private Employee? finrespempl;
 
         public AddMaterialResponseViewModel()
         {
@@ -27,20 +38,21 @@ namespace BuildMaterials.ViewModels
 
         private void AddMaterial()
         {
-            if (SelectedMaterial == null)
+            if (SelectedMaterial == null || SelectedFinResponEmployee == null)
             {
                 error();
                 return;
             }
             else
             {
-                MaterialResponse.Name = SelectedMaterial.Name!;
+                MaterialResponse.MaterialID = SelectedMaterial.ID;
+                MaterialResponse.FinResponseEmployeeID = SelectedFinResponEmployee.ID;
             }
             if (MaterialResponse.IsValid)
             {
                 App.DBContext.MaterialResponse.Add(MaterialResponse);
                 System.Windows.MessageBox.Show("Материально-ответственный отчет успешно добавлен!","Материально-ответственный отчет",MessageBoxButton.OK,MessageBoxImage.Information);
-                _window?.Close();
+                _window.DialogResult = true;
             }
             else
             {

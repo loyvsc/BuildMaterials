@@ -1,5 +1,4 @@
 ﻿using BuildMaterials.BD;
-using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
@@ -160,33 +159,34 @@ namespace BuildMaterials.Models
         public float FinalSumm => Summ + TaxSumm;
         public string FinalSummAtString => "Итого: " + (Summ + TaxSumm);
         public string? DateInString => Date?.ToShortDateString();
-        public int MatertialID { get; set; } = -1;
-        public Material? Material
+        public int MaterialID
         {
-            get
+            get => matid;
+            set
             {
+                matid = value;
                 if (UseBD)
                 {
-                    return App.DBContext.Materials.ElementAt(MatertialID);
+                    App.DBContext.Query($"UPDATE Accounts SET MaterialID ={value} WHERE ID={ID};");
                 }
-                return material;
+                OnPropertyChanged(nameof(Material));
+                OnPropertyChanged(nameof(MaterialID));
             }
+        }
+        public Material? Material
+        {
+            get => App.DBContext.Materials.ElementAt(MaterialID);
             set
             {
                 if (value != null)
                 {
-
-                    MatertialID = value.ID;
-                    material = value;
-                    if (UseBD)
-                    {
-                        App.DBContext.Query($"UPDATE Account SET MaterialID = {value.ID} WHERE ID ={ID};");
-                    }
+                    MaterialID = value.ID;
+                    OnPropertyChanged(nameof(Material));
                 }
             }
         }
 
-        private Material? material;
+        private int matid;
         private DateTime? date;
         private string? countUnits = string.Empty;
         private string? buyer = string.Empty;
@@ -204,7 +204,7 @@ namespace BuildMaterials.Models
             UseBD = false;
         }
 
-        public Account(int iD, string? seller, string? shipperName, string? shipperAdress, string? consigneeName, string? consigneeAdress, string? buyer, string? countUnits, float count, float price, float tax, DateTime? date, Material material)
+        public Account(int iD, string? seller, string? shipperName, string? shipperAdress, string? consigneeName, string? consigneeAdress, string? buyer, string? countUnits, float count, float price, float tax, DateTime? date, int materialid)
         {
             UseBD = false;
             ID = iD;
@@ -219,7 +219,7 @@ namespace BuildMaterials.Models
             Price = price;
             Tax = tax;
             Date = date;
-            Material = material;
+            MaterialID = materialid;
             UseBD = true;
         }
 
@@ -229,7 +229,7 @@ namespace BuildMaterials.Models
         }
 
         public bool IsValid => Date != null
-            && Material != null
+            && MaterialID != -1
             && Seller != string.Empty
             && ShipperName != string.Empty
             && ShipperAdress != string.Empty

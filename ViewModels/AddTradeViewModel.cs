@@ -31,27 +31,7 @@ namespace BuildMaterials.ViewModels
         public Models.Trade Trade { get; set; }
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
-        public string[] SellersFIO
-        {
-            get
-            {
-                List<string> fio = new List<string>(32);
-                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-                {
-                    _connection.Open();
-                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, Pathnetic FROM Employees;", _connection))
-                    {
-                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
-                            while (reader.Read())
-                            {
-                                fio.Add($"{reader.GetString(1)} {reader.GetString(0)} {reader.GetString(2)}");
-                            }
-                        _connection.Close();
-                    }
-                }
-                return fio.ToArray();
-            }
-        }
+        public List<Employee> SellersFIO => App.DBContext.Employees.Select("SELECT * FROM Employees");
         public List<Material> Materials => App.DBContext.Materials.Select("SELECT * FROM Materials");
 
         public Models.Material SelectedMaterial
@@ -67,7 +47,7 @@ namespace BuildMaterials.ViewModels
         private Models.Material _selMat = null!;
 
         private readonly Window _window = null!;
-        public string SelectedFIO { get; set; } = string.Empty;
+        public Employee? SellectedEmployee { get; set; }
 
         public AddTradeViewModel()
         {
@@ -97,12 +77,20 @@ namespace BuildMaterials.ViewModels
                 System.Windows.MessageBox.Show("Продано больше, чем в наличии!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            Trade.SellerFio = SelectedFIO;
-            Trade.MaterialName = SelectedMaterial.Name;
+            if (SellectedEmployee != null && SelectedMaterial!=null)
+            {
+                Trade.SellerID = SellectedEmployee!.ID;
+                Trade.MaterialID = SelectedMaterial.ID;
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Введите всю требуемую информацию!", "Товарооборот", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             if (Trade.IsValid)
             {
-                App.DBContext.Query($"UPDATE Materials SET COUNT = COUNT-{Trade.Count} WHERE id = {SelectedMaterial.ID};");
                 App.DBContext.Trades.Add(Trade);
+                App.DBContext.Query($"UPDATE Materials SET COUNT = COUNT-{Trade.Count} WHERE id = {SelectedMaterial.ID};");
                 _window.DialogResult = true;
                 return;
             }

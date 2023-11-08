@@ -30,24 +30,19 @@ namespace BuildMaterials.Other
                             printObj = (modelObj as Contract)?.ToString();
                             break;
                         }
-                    case Models.Customer:
+                    case Models.Seller:
                         {
-                            printObj = (modelObj as Customer)?.AsString();
+                            printObj = (modelObj as Seller)?.AsString();
                             break;
                         }
                     case Employee:
                         {
-                            printObj = (modelObj as Employee)?.ToString();
+                            printObj = (modelObj as Employee)?.Print();
                             break;
                         }
                     case Material:
                         {
                             printObj = (modelObj as Material)?.AsString();
-                            break;
-                        }
-                    case Provider:
-                        {
-                            printObj = (modelObj as Provider)?.AsString();
                             break;
                         }
                     case Trade:

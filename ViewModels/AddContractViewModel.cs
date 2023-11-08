@@ -7,40 +7,20 @@ namespace BuildMaterials.ViewModels
 {
     public class AddContractViewModel
     {
-        public Models.Contract Contract { get; set; }
+        public Contract Contract { get; set; }
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
         private readonly Window _window = null!;
         public readonly Settings Settings;
 
-        public string?[] MaterialNames
-        {
-            get
-            {
-                List<string> list = new List<string>(64);
-                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-                {
-                    _connection.Open();
-                    using (MySqlCommand command = new MySqlCommand("SELECT Name FROM Materials", _connection))
-                    {
-                        using (MySqlDataReader reader = command.ExecuteMySqlReaderAsync())
-                            while (reader.Read())
-                            {
-                                list.Add(reader.GetString(0));
-                            }
-                    }
-                    _connection.Close();
-                }
-                return list.ToArray();
-            }
-        }
+        public List<Material> Materials => App.DBContext.Materials.ToList();
 
-        public List<Customer> CustomersList
+        public List<Seller> CustomersList
         {
             get
             {
-                List<Customer> customers = new List<Customer>(128);
+                List<Seller> customers = new List<Seller>(128);
                 using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
                 {
                     _connection.Open();
@@ -50,12 +30,12 @@ namespace BuildMaterials.ViewModels
                         using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
                             while (reader.Read())
                             {
-                                customers.Add(new Customer() { CompanyName = reader.GetString(0), Adress = reader.GetString(1) });
+                                customers.Add(new Seller() { CompanyName = reader.GetString(0), Adress = reader.GetString(1) });
                             }
                     }
                     _connection.Close();
                 }
-                customers.Add(new Customer() { CompanyName = Settings.CompanyName, Adress = Settings.CompanyAdress });
+                customers.Add(new Seller() { CompanyName = Settings.CompanyName, Adress = Settings.CompanyAdress });
                 return customers;
             }
         }

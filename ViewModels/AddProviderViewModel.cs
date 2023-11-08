@@ -5,7 +5,7 @@ namespace BuildMaterials.ViewModels
 {
     public class AddProviderViewModel
     {
-        public Models.Provider Provider { get; set; }
+        public Models.Seller Provider { get; set; }
 
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
@@ -14,7 +14,7 @@ namespace BuildMaterials.ViewModels
 
         public AddProviderViewModel()
         {
-            Provider = new Models.Provider();
+            Provider = new Models.Seller();
         }
 
         public AddProviderViewModel(Window window) : this()
@@ -26,7 +26,7 @@ namespace BuildMaterials.ViewModels
         {
             if (Provider.IsValid)
             {
-                App.DBContext.Providers.Add(Provider);
+                App.DBContext.Sellers.Add(Provider);
                 _window.DialogResult = true;
                 return;
             }

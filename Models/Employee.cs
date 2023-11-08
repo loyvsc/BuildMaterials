@@ -186,7 +186,7 @@ namespace BuildMaterials.Models
             AccessLevel = accessLevel;
         }
 
-        public override string ToString()
+        public string Print()
         {
             string text = $"Сотрудник №{ID}\nФ.И.О.: {SurName} {Name} {Pathnetic}\nДолжность: {Position}\nНомер телефона: {PhoneNumber}\n";
             if (FinResponsible)
@@ -199,6 +199,10 @@ namespace BuildMaterials.Models
             }
             return text;
         }
+
+        public override string ToString() => $"{SurName} {Name} {Pathnetic}";
+
+        public string FIO => $"{SurName} {Name} {Pathnetic}";
 
         public bool IsValid =>
             PassportIssueDate!=DateTime.Now &&

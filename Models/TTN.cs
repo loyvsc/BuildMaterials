@@ -72,15 +72,27 @@ namespace BuildMaterials.Models
                 OnPropertyChanged(nameof(Summ));
             }
         }
-        public string? MaterialName
+        public int MaterialID
         {
-            get => materialName;
+            get => matid;
             set
             {
-                materialName = value;
-                if (UseBD)
+                matid = value;
+                App.DBContext.Query($"UPDATE TTNS SET MaterialID = {value} WHERE ID = {ID};");
+                OnPropertyChanged(nameof(MaterialID));
+                OnPropertyChanged(nameof(Material));
+            }
+        }
+        public Material? Material
+        {
+            get => App.DBContext.Materials.ElementAt(MaterialID);
+            set
+            {
+                if (value != null)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET MaterialName = '{value}' WHERE ID={ID};");
+                    MaterialID = value.ID;
+                    OnPropertyChanged(nameof(MaterialID));
+                    OnPropertyChanged(nameof(Material));
                 }
             }
         }
@@ -125,7 +137,7 @@ namespace BuildMaterials.Models
         private string? shipper = string.Empty;
         private string? consignee = string.Empty;
         private string? payer = string.Empty;
-        private string? materialName = string.Empty;
+        private int matid = -1;
         private string? countUnits = string.Empty;
         private float weight = 0;
         private float count = 0;
@@ -135,7 +147,7 @@ namespace BuildMaterials.Models
         public string? DateInString => Date?.ToShortDateString();
 
         public TTN() { UseBD = false; }
-        public TTN(int iD, string? shipper, string? consignee, string? payer, float count, float price, string materialName, string countUnit, float weight, DateTime? date)
+        public TTN(int iD, string? shipper, string? consignee, string? payer, float count, float price, int matid, string countUnit, float weight, DateTime? date)
         {
             UseBD = false;
             ID = iD;
@@ -144,7 +156,7 @@ namespace BuildMaterials.Models
             Payer = payer;
             Count = count;
             Price = price;
-            MaterialName = materialName;
+            MaterialID = matid;
             CountUnits = countUnit;
             Weight = weight;
             Date = date;
@@ -153,14 +165,14 @@ namespace BuildMaterials.Models
 
         public override string ToString()
         {
-            return $"ТТН от {DateInString}\nГрузоотправитель: {Shipper}\nГрузополучатель: {Consignee}\nПлательщик: {Payer}\nМатериал: {MaterialName}\nКоличество: {Count} {CountUnits}\nЦена: {Price}\nСумма: {Summ}";
+            return $"ТТН от {DateInString}\nГрузоотправитель: {Shipper}\nГрузополучатель: {Consignee}\nПлательщик: {Payer}\nМатериал: {MaterialID}\nКоличество: {Count} {CountUnits}\nЦена: {Price}\nСумма: {Summ}";
         }
 
         public bool IsValid =>
             Shipper != string.Empty &&
             Consignee != string.Empty &&
             Payer != string.Empty &&
-            MaterialName != string.Empty &&
+            MaterialID != -1 &&
             CountUnits != string.Empty &&
             Date != null;
     }
