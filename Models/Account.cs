@@ -7,7 +7,20 @@ namespace BuildMaterials.Models
         private readonly bool UseBD;
 
         public int ID { get; set; }
-        public string? Seller
+        public Employee? Seller
+        {
+            get => SellerID != null ? App.DbContext.Employees.ElementAt((int)SellerID) : null;
+            set
+            {
+                if (value != null)
+                {
+                    SellerID = value.ID;
+                    OnPropertyChanged(nameof(SellerID));
+                    OnPropertyChanged(nameof(Seller));
+                }
+            }
+        }
+        public int? SellerID
         {
             get => seller;
             set
@@ -15,7 +28,7 @@ namespace BuildMaterials.Models
                 seller = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET Seller='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET Seller={value} WHERE ID={ID};");
                 }
             }
         }
@@ -27,7 +40,7 @@ namespace BuildMaterials.Models
                 shipperName = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET ShipperName='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET ShipperName='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -39,7 +52,7 @@ namespace BuildMaterials.Models
                 shipperAdress = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET ShipperAdress='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET ShipperAdress='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -51,7 +64,7 @@ namespace BuildMaterials.Models
                 consigneeName = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET ConsigneeName='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET ConsigneeName='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -63,11 +76,24 @@ namespace BuildMaterials.Models
                 consigneeAdress = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET ConsigneeAdress='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET ConsigneeAdress='{value}' WHERE ID={ID};");
                 }
             }
         }
-        public string? Buyer
+        public Employee? Buyer
+        {
+            get => BuyerID != null ? App.DbContext.Employees.ElementAt((int)BuyerID) : null;
+            set
+            {
+                if (value != null)
+                {
+                    BuyerID = value.ID;
+                    OnPropertyChanged(nameof(BuyerID));
+                    OnPropertyChanged(nameof(Buyer));
+                }
+            }
+        }
+        public int? BuyerID
         {
             get => buyer;
             set
@@ -75,7 +101,7 @@ namespace BuildMaterials.Models
                 buyer = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET Buyer='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET Buyer={value} WHERE ID={ID};");
                 }
             }
         }
@@ -87,7 +113,7 @@ namespace BuildMaterials.Models
                 countUnits = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET CountUnits='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET CountUnits='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -99,7 +125,7 @@ namespace BuildMaterials.Models
                 count = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET Count='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET Count='{value}' WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Count));
                 OnPropertyChanged(nameof(Summ));
@@ -116,7 +142,7 @@ namespace BuildMaterials.Models
                 price = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET Price='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET Price='{value}' WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Price));
                 OnPropertyChanged(nameof(Summ));
@@ -135,7 +161,7 @@ namespace BuildMaterials.Models
                 tax = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET Tax='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET Tax='{value}' WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Tax));
                 OnPropertyChanged(nameof(TaxSumm));
@@ -152,7 +178,7 @@ namespace BuildMaterials.Models
                 date = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Date SET Date='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Date SET Date='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -167,7 +193,7 @@ namespace BuildMaterials.Models
                 matid = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Accounts SET MaterialID ={value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Accounts SET MaterialID ={value} WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Material));
                 OnPropertyChanged(nameof(MaterialID));
@@ -175,7 +201,7 @@ namespace BuildMaterials.Models
         }
         public Material? Material
         {
-            get => App.DBContext.Materials.ElementAt(MaterialID);
+            get => App.DbContext.Materials.ElementAt(MaterialID);
             set
             {
                 if (value != null)
@@ -189,11 +215,11 @@ namespace BuildMaterials.Models
         private int matid;
         private DateTime? date;
         private string? countUnits = string.Empty;
-        private string? buyer = string.Empty;
+        private int? buyer = -1;
         private string? shipperAdress = string.Empty;
         private string? consigneeAdress = string.Empty;
         private string? consigneeName = string.Empty;
-        private string? seller = string.Empty;
+        private int? seller = -1;
         private string? shipperName = string.Empty;
         private float count = 0;
         private float price = 0;
@@ -204,16 +230,16 @@ namespace BuildMaterials.Models
             UseBD = false;
         }
 
-        public Account(int iD, string? seller, string? shipperName, string? shipperAdress, string? consigneeName, string? consigneeAdress, string? buyer, string? countUnits, float count, float price, float tax, DateTime? date, int materialid)
+        public Account(int iD, int? seller, string? shipperName, string? shipperAdress, string? consigneeName, string? consigneeAdress, int? buyer, string? countUnits, float count, float price, float tax, DateTime? date, int materialid)
         {
             UseBD = false;
             ID = iD;
-            Seller = seller;
+            SellerID = seller;
             ShipperName = shipperName;
             ShipperAdress = shipperAdress;
             ConsigneeName = consigneeName;
             ConsigneeAdress = consigneeAdress;
-            Buyer = buyer;
+            BuyerID = buyer;
             CountUnits = countUnits;
             Count = count;
             Price = price;
@@ -225,17 +251,17 @@ namespace BuildMaterials.Models
 
         public override string ToString()
         {
-            return $"Счет №{ID} от {DateInString}\nПродавец: {Seller}\nПокупатель: {Buyer}\nГрузоотправитель: {ShipperName} (адрес: {ShipperAdress})\nГрузополучатель: {ConsigneeName} (адрес: {ConsigneeAdress})\nКоличество: {Count} {CountUnits}\nЦена: {Price}\nСумма: {Summ}\nНалоговый сбор: {TaxSumm}\nИтого: {Summ + TaxSumm}";
+            return $"Счет №{ID} от {DateInString}\nПродавец: {SellerID}\nПокупатель: {BuyerID}\nГрузоотправитель: {ShipperName} (адрес: {ShipperAdress})\nГрузополучатель: {ConsigneeName} (адрес: {ConsigneeAdress})\nКоличество: {Count} {CountUnits}\nЦена: {Price}\nСумма: {Summ}\nНалоговый сбор: {TaxSumm}\nИтого: {Summ + TaxSumm}";
         }
 
         public bool IsValid => Date != null
             && MaterialID != -1
-            && Seller != string.Empty
+            && SellerID != -1
             && ShipperName != string.Empty
             && ShipperAdress != string.Empty
             && ConsigneeName != string.Empty
             && ConsigneeAdress != string.Empty
-            && Buyer != string.Empty
+            && BuyerID != -1
             && CountUnits != string.Empty;
     }
 }

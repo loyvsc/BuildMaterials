@@ -38,35 +38,15 @@ namespace BuildMaterials.ViewModels
             }
         }
 
-        public string[] EmployeeNames { get; set; }
+        public List<Employee> Employees => App.DbContext.Employees.ToList();
 
         public int SelectedShipperIndex { get; set; } = -1;
         public int SelectedConsigneeIndex { get; set; } = -1;
-        public List<Material> Materials => App.DBContext.Materials.ToList();
+        public List<Material> Materials => App.DbContext.Materials.ToList();
 
         public AddAccountViewModel()
         {
             Settings = new Settings();
-            EmployeeNames = GetEmployeeNames();
-        }
-
-        private string[] GetEmployeeNames()
-        {
-            List<string> fio = new List<string>(32);
-            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-            {
-                _connection.OpenAsync().Wait();
-                using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
-                {
-                    using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
-                        while (reader.Read())
-                        {
-                            fio.Add($"{reader.GetString(1)} {reader.GetString(0)} {reader.GetString(2)}");
-                        }
-                }
-                _connection.CloseAsync().Wait();
-            }
-            return fio.ToArray();
         }
 
         public AddAccountViewModel(Window window) : this()
@@ -80,7 +60,7 @@ namespace BuildMaterials.ViewModels
             Account.ConsigneeAdress = CustomersList[SelectedConsigneeIndex].Adress;
             if (Account.IsValid)
             {
-                App.DBContext.Accounts.Add(Account);
+                App.DbContext.Accounts.Add(Account);
                 _window.DialogResult = true;
                 return;
             }

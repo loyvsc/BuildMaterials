@@ -14,7 +14,7 @@ namespace BuildMaterials.Models
                 name = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Materials SET Name = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Materials SET Name = '{value}' WHERE ID = {ID};");
                 }                
             }
         }
@@ -26,7 +26,7 @@ namespace BuildMaterials.Models
                 manufacturer = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Materials SET Manufacturer = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Materials SET Manufacturer = '{value}' WHERE ID = {ID};");
                 }                
             }
         }
@@ -38,7 +38,7 @@ namespace BuildMaterials.Models
                 price = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Materials SET Price = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Materials SET Price = '{value}' WHERE ID = {ID};");
                 }
             }
         }
@@ -50,7 +50,7 @@ namespace BuildMaterials.Models
                 count = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Materials SET Count = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Materials SET Count = '{value}' WHERE ID = {ID};");
                 }
             }
         }
@@ -62,7 +62,7 @@ namespace BuildMaterials.Models
                 countUnits = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Materials SET CountUnits = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Materials SET CountUnits = '{value}' WHERE ID = {ID};");
                 }
             }
         }
@@ -74,7 +74,19 @@ namespace BuildMaterials.Models
                 enterDate = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Materials SET EnterDate = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Materials SET EnterDate = '{value}' WHERE ID = {ID};");
+                }
+            }
+        }
+        public string EnterDateAsString
+        {
+            get => App.DbContext.Materials.Select($"SELECT * FROM MATERIALS WHERE ID = " + ID)[0].EnterDate.ToShortDateString();
+            set
+            {
+                DateTime date;
+                if (DateTime.TryParse(value.Trim(),out date))
+                {
+                    EnterDate = date;
                 }
             }
         }

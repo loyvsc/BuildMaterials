@@ -23,12 +23,8 @@ namespace BuildMaterials.Views
     {
         public AboutProgramView()
         {
-            InitializeComponent();            
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
+            InitializeComponent();
+            this.DataContext = new ViewModels.AboutProgrammViewModel(this);
         }
     }
 }

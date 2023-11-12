@@ -31,15 +31,6 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged(nameof(EmployeesList));
             }
         }
-        public List<Seller> SellersList
-        {
-            get => sellers;
-            set
-            {
-                sellers = value;
-                OnPropertyChanged(nameof(SellersList));
-            }
-        }
         public List<Trade> TradesList
         {
             get => trades;
@@ -103,6 +94,15 @@ namespace BuildMaterials.ViewModels
                 OnPropertyChanged(nameof(CustomersList));
             }
         }
+        public List<PayType> PayTypesList
+        {
+            get => paytypeslist;
+            set
+            {
+                paytypeslist = value;
+                OnPropertyChanged(nameof(PayTypesList));
+            }
+        }
         #endregion
 
         #region Commands
@@ -141,7 +141,6 @@ namespace BuildMaterials.ViewModels
         }
         public Settings Settings { get; private set; }
 
-        public bool? CanAdd_EditConfidentional => CurrentEmployee?.AccessLevel.Equals(3);
         public Visibility IsConfidentionNotView => CurrentEmployee?.AccessLevel < 2 ? Visibility.Collapsed : Visibility.Visible;
         public Visibility IsPrintEnabled
         {
@@ -156,6 +155,7 @@ namespace BuildMaterials.ViewModels
 
         #region Private vars
         private Visibility isPrintEnabled;
+        private List<PayType> paytypeslist;
         private string selectedTab = string.Empty;
         private List<Seller> provlist;
         private List<Seller> custlist;
@@ -163,8 +163,6 @@ namespace BuildMaterials.ViewModels
         private Employee? currentEmployee;
         private List<Material> materials = null!;
         private List<Employee> employees = null!;
-        private List<Seller> customers = null!;
-        private List<Seller> sellers = null!;
         private List<Trade> trades = null!;
         private List<TTN> ttns = null!;
         private List<Account> accounts = null!;
@@ -176,16 +174,16 @@ namespace BuildMaterials.ViewModels
         public MainWindowViewModel()
         {
             CurrentEmployee = new Employee();
-            CustomersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE;");
-            ProvidersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = false;");
-            MaterialsList = App.DBContext.Materials.ToList();
-            EmployeesList = App.DBContext.Employees.ToList();
-            SellersList = App.DBContext.Sellers.ToList();
-            TradesList = App.DBContext.Trades.ToList();
-            TTNList = App.DBContext.TTNs.ToList();
-            AccountsList = App.DBContext.Accounts.ToList();
-            ContractsList = App.DBContext.Contracts.ToList();
-            MaterialResponsesList = App.DBContext.MaterialResponse.ToList();
+            CustomersList = App.DbContext.Sellers.Select("SELECT * FROM customers;");
+            ProvidersList = App.DbContext.Sellers.Select("SELECT * FROM providers;");
+            MaterialsList = App.DbContext.Materials.ToList();
+            EmployeesList = App.DbContext.Employees.ToList();
+            TradesList = App.DbContext.Trades.ToList();
+            TTNList = App.DbContext.TTNs.ToList(); //error in this block
+            AccountsList = App.DbContext.Accounts.ToList();
+            ContractsList = App.DbContext.Contracts.ToList();
+            PayTypesList = App.DbContext.PayTypes.ToList();
+            MaterialResponsesList = App.DbContext.MaterialResponse.ToList();
 
             IsPrintEnabled = Visibility.Collapsed;
             Settings = new Settings();
@@ -193,6 +191,8 @@ namespace BuildMaterials.ViewModels
 
         public MainWindowViewModel(Employee employee) : this()
         {
+            App.Current.Resources["IsConfView"] = CurrentEmployee?.AccessLevel > 1;
+            App.Current.Resources["IsConfAddEdit"] = CurrentEmployee?.AccessLevel == 3;
             CurrentEmployee = employee;
         }
         #endregion
@@ -204,7 +204,7 @@ namespace BuildMaterials.ViewModels
                 return;
             }
             using (PrinterConnect print = new PrinterConnect())
-            { 
+            {
                 try
                 {
                     bool result = false;
@@ -310,9 +310,56 @@ namespace BuildMaterials.ViewModels
                 string tabName = (e.AddedItems[0] as TabItem)!.Name;
                 selectedTab = tabName;
                 SearchText = string.Empty;
+                switch (selectedTab)
+                {
+                    case "materialResponsibleTab":
+                        {
+                            MaterialResponsesList = App.DbContext.MaterialResponse.ToList();
+                            break;
+                        }
+                    case "materialsTab":
+                        {
+                            MaterialsList = App.DbContext.Materials.ToList();
+                            break;
+                        }
+                    case "employersTab":
+                        {
+                            EmployeesList = App.DbContext.Employees.ToList();
+                            break;
+                        }
+                    case "customersTab":
+                        {
+                            CustomersList = App.DbContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE;");
+                            break;
+                        }
+                    case "postavTab":
+                        {
+                            CustomersList = App.DbContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = false;");
+                            break;
+                        }
+                    case "uchetTab":
+                        {
+                            TradesList = App.DbContext.Trades.ToList();
+                            break;
+                        }
+                    case "ttnTab":
+                        {
+                            TTNList = App.DbContext.TTNs.ToList();
+                            break;
+                        }
+                    case "accountTab":
+                        {
+                            AccountsList = App.DbContext.Accounts.ToList();
+                            break;
+                        }
+                    case "contractTab":
+                        {
+                            ContractsList = App.DbContext.Contracts.ToList();
+                            break;
+                        }
+                }
             }
         }
-
         private void DeleteRow()
         {
             try
@@ -327,19 +374,8 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             MaterialResponse buf = (MaterialResponse)SelectedTableItem;
-                            App.DBContext.MaterialResponse.Remove(buf);
-                            MaterialResponsesList = App.DBContext.MaterialResponse.ToList();
-                            break;
-                        }
-                    case "providersTab":
-                        {
-                            if (SellersList.Count.Equals(0))
-                            {
-                                return;
-                            }
-                            Seller buf = (Seller)SelectedTableItem;
-                            App.DBContext.Sellers.Remove(buf);
-                            SellersList = App.DBContext.Sellers.ToList();
+                            App.DbContext.MaterialResponse.Remove(buf);
+                            MaterialResponsesList = App.DbContext.MaterialResponse.ToList();
                             break;
                         }
                     case "materialsTab":
@@ -349,8 +385,8 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             Material buf = (Material)SelectedTableItem;
-                            App.DBContext.Materials.Remove(buf);
-                            MaterialsList = App.DBContext.Materials.ToList();
+                            App.DbContext.Materials.Remove(buf);
+                            MaterialsList = App.DbContext.Materials.ToList();
                             break;
                         }
                     case "employersTab":
@@ -365,8 +401,8 @@ namespace BuildMaterials.ViewModels
                                 System.Windows.MessageBox.Show("Нельзя удалять пользователя под которым был выполнен вход!");
                                 return;
                             }
-                            App.DBContext.Employees.Remove(buf);
-                            EmployeesList = App.DBContext.Employees.ToList();
+                            App.DbContext.Employees.Remove(buf);
+                            EmployeesList = App.DbContext.Employees.ToList();
                             break;
                         }
                     case "customersTab":
@@ -376,19 +412,19 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             Seller buf = (Seller)SelectedTableItem;
-                            App.DBContext.Sellers.Remove(buf);
-                            CustomersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE");
+                            App.DbContext.Sellers.Remove(buf);
+                            CustomersList = App.DbContext.Sellers.Select("SELECT * FROM customers;");
                             break;
                         }
                     case "postavTab":
                         {
-                            if (SellersList.Count.Equals(0))
+                            if (ProvidersList.Count.Equals(0))
                             {
                                 return;
                             }
                             Seller buf = (Seller)SelectedTableItem;
-                            App.DBContext.Sellers.Remove(buf);
-                            SellersList = App.DBContext.Sellers.ToList();
+                            App.DbContext.Sellers.Remove(buf);
+                            ProvidersList = App.DbContext.Sellers.Select("SELECT * FROM providers;");
                             break;
                         }
                     case "uchetTab":
@@ -398,8 +434,8 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             Trade buf = (Trade)SelectedTableItem;
-                            App.DBContext.Trades.Remove(buf);
-                            TradesList = App.DBContext.Trades.ToList();
+                            App.DbContext.Trades.Remove(buf);
+                            TradesList = App.DbContext.Trades.ToList();
                             break;
                         }
                     case "ttnTab":
@@ -409,8 +445,8 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             TTN buf = (TTN)SelectedTableItem;
-                            App.DBContext.TTNs.Remove(buf);
-                            TTNList = App.DBContext.TTNs.ToList();
+                            App.DbContext.TTNs.Remove(buf);
+                            TTNList = App.DbContext.TTNs.ToList();
                             break;
                         }
                     case "accountTab":
@@ -420,8 +456,8 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             Account buf = (Account)SelectedTableItem;
-                            App.DBContext.Accounts.Remove(buf);
-                            AccountsList = App.DBContext.Accounts.ToList();
+                            App.DbContext.Accounts.Remove(buf);
+                            AccountsList = App.DbContext.Accounts.ToList();
                             break;
                         }
                     case "contractTab":
@@ -431,8 +467,8 @@ namespace BuildMaterials.ViewModels
                                 return;
                             }
                             Contract buf = (Contract)SelectedTableItem;
-                            App.DBContext.Contracts.Remove(buf);
-                            ContractsList = App.DBContext.Contracts.ToList();
+                            App.DbContext.Contracts.Remove(buf);
+                            ContractsList = App.DbContext.Contracts.ToList();
                             break;
                         }
                 }
@@ -446,7 +482,6 @@ namespace BuildMaterials.ViewModels
                 SelectedTableItem = null;
             }
         }
-
         private void AddRow()
         {
             switch (selectedTab)
@@ -456,7 +491,7 @@ namespace BuildMaterials.ViewModels
                         AddMaterialResponseView addMaterial = new AddMaterialResponseView();
                         if (addMaterial.ShowDialog() == true)
                         {
-                            MaterialResponsesList = App.DBContext.MaterialResponse.ToList();
+                            MaterialResponsesList = App.DbContext.MaterialResponse.ToList();
                         }
                         break;
                     }
@@ -465,7 +500,7 @@ namespace BuildMaterials.ViewModels
                         AddMaterialView addMaterial = new AddMaterialView();
                         if (addMaterial.ShowDialog() == true)
                         {
-                            MaterialsList = App.DBContext.Materials.ToList();
+                            MaterialsList = App.DbContext.Materials.ToList();
                         }
                         break;
                     }
@@ -474,7 +509,7 @@ namespace BuildMaterials.ViewModels
                         AddEmployeeView add = new AddEmployeeView();
                         if (add.ShowDialog() == true)
                         {
-                            EmployeesList = App.DBContext.Employees.ToList();
+                            EmployeesList = App.DbContext.Employees.ToList();
                         }
                         break;
                     }
@@ -483,7 +518,7 @@ namespace BuildMaterials.ViewModels
                         AddCustomerView add = new AddCustomerView();
                         if (add.ShowDialog() == true)
                         {
-                            CustomersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER == TRUE;");
+                            CustomersList = App.DbContext.Sellers.Select("SELECT * FROM customers;");
                         }
                         break;
                     }
@@ -492,7 +527,7 @@ namespace BuildMaterials.ViewModels
                         AddProviderView add = new AddProviderView();
                         if (add.ShowDialog() == true)
                         {
-                            ProvidersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER == FALSE;");
+                            ProvidersList = App.DbContext.Sellers.Select("SELECT * FROM providers;");
                         }
                         break;
                     }
@@ -501,7 +536,7 @@ namespace BuildMaterials.ViewModels
                         AddTradeView add = new AddTradeView();
                         if (add.ShowDialog() == true)
                         {
-                            TradesList = App.DBContext.Trades.ToList();
+                            TradesList = App.DbContext.Trades.ToList();
                         }
                         break;
                     }
@@ -510,7 +545,7 @@ namespace BuildMaterials.ViewModels
                         AddTTNView add = new AddTTNView();
                         if (add.ShowDialog() == true)
                         {
-                            TTNList = App.DBContext.TTNs.ToList();
+                            TTNList = App.DbContext.TTNs.ToList();
                         }
                         break;
                     }
@@ -519,7 +554,7 @@ namespace BuildMaterials.ViewModels
                         AddAccountView add = new AddAccountView();
                         if (add.ShowDialog() == true)
                         {
-                            AccountsList = App.DBContext.Accounts.ToList();
+                            AccountsList = App.DbContext.Accounts.ToList();
                         }
                         break;
                     }
@@ -528,7 +563,7 @@ namespace BuildMaterials.ViewModels
                         AddContractView add = new AddContractView();
                         if (add.ShowDialog() == true)
                         {
-                            ContractsList = App.DBContext.Contracts.ToList();
+                            ContractsList = App.DbContext.Contracts.ToList();
                         }
                         break;
                     }
@@ -544,22 +579,22 @@ namespace BuildMaterials.ViewModels
                     {
                         case "materialsTab":
                             {
-                                MaterialsList = App.DBContext.Materials.ToList();
+                                MaterialsList = App.DbContext.Materials.ToList();
                                 break;
                             }
                         case "employersTab":
                             {
-                                EmployeesList = App.DBContext.Employees.ToList();
+                                EmployeesList = App.DbContext.Employees.ToList();
                                 break;
                             }
                         case "customersTab":
                             {
-                                SellersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = TRUE;");
+                                CustomersList = App.DbContext.Sellers.Select("SELECT * FROM customers;");
                                 break;
                             }
                         case "postavTab":
                             {
-                                SellersList = App.DBContext.Sellers.Select("SELECT * FROM SELLERS WHERE ISCUSTOMER = false;");
+                                ProvidersList = App.DbContext.Sellers.Select("SELECT * FROM providers;");
                                 break;
                             }
                     }
@@ -569,22 +604,22 @@ namespace BuildMaterials.ViewModels
                 {
                     case "materialsTab":
                         {
-                            MaterialsList = App.DBContext.Materials.Search(text);
+                            MaterialsList = App.DbContext.Materials.Search(text);
                             break;
                         }
                     case "employersTab":
                         {
-                            EmployeesList = App.DBContext.Employees.Search(text);
+                            EmployeesList = App.DbContext.Employees.Search(text);
                             break;
                         }
                     case "customersTab":
                         {
-                            SellersList = App.DBContext.Sellers.Search(text);
+                            CustomersList = App.DbContext.Sellers.Search(text, true);
                             break;
                         }
                     case "postavTab":
                         {
-                            SellersList = App.DBContext.Sellers.Search(text);
+                            ProvidersList = App.DbContext.Sellers.Search(text);
                             break;
                         }
                 }
@@ -594,6 +629,5 @@ namespace BuildMaterials.ViewModels
                 return;
             }
         }
-
     }
 }

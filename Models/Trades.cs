@@ -25,7 +25,7 @@ namespace BuildMaterials.Models
                 date = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET Date='{date.ToMySQLDate()}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE trades SET Date='{date.ToMySQLDate()}' WHERE ID = {ID};");
                 }
             }
         }
@@ -43,7 +43,7 @@ namespace BuildMaterials.Models
                 sellerId = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET SellerID={value} WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE trades SET SellerID={value} WHERE ID = {ID};");
                     OnPropertyChanged(nameof(SellerID));
                     OnPropertyChanged(nameof(Seller));
                 }
@@ -52,7 +52,7 @@ namespace BuildMaterials.Models
 
         public Employee? Seller
         {
-            get => SellerID != null ? App.DBContext.Employees.Select($"SELECT * FROM employees WHERE ID = {SellerID};")[0] : null;
+            get => SellerID != null ? App.DbContext.Employees.Select($"SELECT * FROM employees WHERE ID = {SellerID};")[0] : null;
             set
             {
                 if (value != null)
@@ -70,14 +70,15 @@ namespace BuildMaterials.Models
                 matId = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET MaterialID={value} WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE trades SET MaterialID={value} WHERE ID = {ID};");
                     OnPropertyChanged(nameof(MaterialID));
                     OnPropertyChanged(nameof(Seller));
                 }
             }
         }
 
-        public Material? Material => App.DBContext.Materials.Select($"SELECT * FROM Materials WHERE ID={MaterialID}")[0];
+        public Material? Material
+            => MaterialID != null ? App.DbContext.Materials.Select($"SELECT * FROM Materials WHERE ID={MaterialID}")[0] : null;
 
         public float? Count
         {
@@ -87,7 +88,7 @@ namespace BuildMaterials.Models
                 count = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET Count={value} WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE trades SET Count={value} WHERE ID = {ID};");
                 }
                 OnPropertyChanged(nameof(Count));
                 OnPropertyChanged(nameof(Summ));
@@ -101,14 +102,14 @@ namespace BuildMaterials.Models
                 price = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET Price={value} WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE trades SET Price={value} WHERE ID = {ID};");
                 }
                 OnPropertyChanged(nameof(Price));
                 OnPropertyChanged(nameof(Summ));
             }
         }
 
-        public int PayTypeID
+        public int? PayTypeID
         {
             get => pattypeid;
             set
@@ -116,10 +117,23 @@ namespace BuildMaterials.Models
                 pattypeid = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE trades SET PayTypeID={value} WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE trades SET PayTypeID={value} WHERE ID = {ID};");
                 }
                 OnPropertyChanged(nameof(Price));
                 OnPropertyChanged(nameof(Summ));
+            }
+        }
+
+        public PayType? PayType
+        {
+            get => App.DbContext.PayTypes.Select($"SELECT * FROM PAYTYPES WHERE ID = {PayTypeID}")[0];
+            set
+            {
+                if (PayType != null)
+                {
+                    PayTypeID = value!.ID;
+                    OnPropertyChanged(nameof(PayType));
+                }
             }
         }
 
@@ -130,30 +144,29 @@ namespace BuildMaterials.Models
         private float? price = 0;
         private DateTime date;
         private int? matId = -1;
-        private int pattypeid;
+        private int? pattypeid;
 
         public Trade()
         {
             UseBD = false;
+            Date = DateTime.Now;
         }
 
-        public Trade(int iD, DateTime date, int? sellerid, int? materialId, float? count, float? price,int paytypeid)
+        public Trade(int iD, DateTime date, int? sellerid, int? materialId, float? count, float? price, int paytypeid)
         {
-            UseBD = true;
+            UseBD = false;
             ID = iD;
-            this.date = date;
-            this.sellerId = sellerid;
-            this.matId = materialId;
-            this.count = count;
-            this.price = price;
-            this.pattypeid = paytypeid;
+            Date = date;
+            SellerID = sellerid;
+            MaterialID = materialId;
+            Count = count;
+            Price = price;
+            PayTypeID = paytypeid;
+            UseBD = true;
         }
 
-        public bool IsValid =>
-            sellerId != -1
-            && matId != -1;
+        public bool IsValid => sellerId != -1 && matId != -1;
 
-        public override string ToString() =>
-            $"Товарооборот №{ID} от {DateInString}\nПродавец: {Seller}\nМатериал: {Material?.Name}\nКоличество: {Count}\nЦена: {Price}";
+        public override string ToString() => $"Товарооборот №{ID} от {DateInString}\nПродавец: {Seller}\nМатериал: {Material?.Name}\nКоличество: {Count}\nЦена: {Price}";
     }
 }

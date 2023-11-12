@@ -10,7 +10,6 @@ namespace BuildMaterials.BD
     }
     public interface IDBSetBase<T> where T : class
     {
-        List<T> ToList();
         void Add(T obj);
         void Remove(T obj);
         void Remove(int id);
@@ -51,26 +50,6 @@ namespace BuildMaterials.BD
 
         public ApplicationContext()
         {
-            if (!CheckBDCreated())
-            {
-                InitializeDatabase();
-                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", "BM3132131", DateTime.Now));
-                PayTypes.Add(new PayType(-1, "Наличный расчет"));
-                PayTypes.Add(new PayType(-1, "Безналичный расчет"));
-            }
-        }
-
-        public void InitializeDatabase()
-        {
-            CreateDatabase();
-            InitTables();
-        }
-
-        private void InitTables()
-        {
-            Query(EmployeesTable.CreateQuery + SellersTable.CreateQuery + MaterialsTable.CreateQuery +
-                TradesTable.CreateQuery + TTNSTable.CreateQuery + AccountsTable.CreateQuery + ContractsTable.CreateQuery
-                + MaterialResponsesTable.CreateQuery + PayTypesTable.CreateQuery);
             PayTypes = new PayTypesTable();
             Employees = new EmployeesTable();
             Sellers = new SellersTable();
@@ -80,27 +59,56 @@ namespace BuildMaterials.BD
             Accounts = new AccountsTable();
             Contracts = new ContractsTable();
             MaterialResponse = new MaterialResponsesTable();
-            CreateFKs();
+            CreateDatabase();
         }
+
+        public void CreateDatabase()
+        {
+            if (!CheckBDCreated())
+            {
+                InitializeDatabase();
+                Employees.Add(new Employee(-1, "Имя", "Фамилия", "Отчество", "Администратор", "+375259991234", "BM3132131", DateTime.Now));
+                PayTypes.Add(new PayType(-1, "Наличный расчет"));
+                PayTypes.Add(new PayType(-1, "Безналичный расчет"));
+            }
+        }
+
+        private void InitializeDatabase()
+        {
+            InitDatabase();
+            InitTables();
+        }
+
+        private void InitTables()
+        {
+            Query(EmployeesTable.CreateQuery + SellersTable.CreateQuery + MaterialsTable.CreateQuery +
+                TradesTable.CreateQuery + TTNSTable.CreateQuery + AccountsTable.CreateQuery + ContractsTable.CreateQuery
+                + MaterialResponsesTable.CreateQuery + PayTypesTable.CreateQuery);
+            CreateFKs();
+            CreateViews();
+        }
+
+        private void CreateViews() => Query("CREATE VIEW providers AS SELECT * FROM sellers WHERE iscustomer = false;" +
+                "CREATE VIEW customers AS SELECT * FROM sellers WHERE iscustomer = true;");
 
         private void CreateFKs()
         {
             string FKsQuery = "ALTER TABLE TRADES ADD FOREIGN KEY (MATERIALID) REFERENCES MATERIALS(ID) ON DELETE SET NULL;" +
                 "ALTER TABLE TRADES ADD FOREIGN KEY (SellerId) REFERENCES EMPLOYEES(ID) ON DELETE SET NULL;" +
                 "ALTER TABLE TRADES ADD FOREIGN KEY (paytypeid) REFERENCES paytypes(ID) ON DELETE SET NULL;" +
-                    "ALTER TABLE materialresponses add foreign key (MaterialID) references materials(id) on delete set null;" +
-                    "ALTER TABLE materialresponses add foreign key (FinResponseEmployeeID) references EMPLOYEES(id) on delete set null;" +
-                    "ALTER TABLE ttns add foreign key (materialid) references materials(id) on delete set null;" +
-                    "ALTER TABLE accounts add foreign key (materialid) references materials(id) on delete set null;" +
-                    "ALTER TABLE accounts add foreign key (seller) references sellers(id) on delete set null;" +
-                    "ALTER TABLE accounts add foreign key (Buyer) references sellers(id) on delete set null;" +
-                    "ALTER TABLE contracts add foreign key (Buyer) references sellers(id) on delete set null;" +
-                    "ALTER TABLE contracts add foreign key (seller) references sellers(id) on delete set null;" +
-                    "ALTER TABLE contracts add foreign key (MaterialID) references materials(id) on delete set null;";
+                "ALTER TABLE materialresponses add foreign key (MaterialID) references materials(id) on delete set null;" +
+                "ALTER TABLE materialresponses add foreign key (FinResponseEmployeeID) references EMPLOYEES(id) on delete set null;" +
+                "ALTER TABLE ttns add foreign key (materialid) references materials(id) on delete set null;" +
+                "ALTER TABLE accounts add foreign key (materialid) references materials(id) on delete set null;" +
+                "ALTER TABLE accounts add foreign key (seller) references sellers(id) on delete set null;" +
+                "ALTER TABLE accounts add foreign key (Buyer) references sellers(id) on delete set null;" +
+                "ALTER TABLE contracts add foreign key (Buyer) references sellers(id) on delete set null;" +
+                "ALTER TABLE contracts add foreign key (seller) references sellers(id) on delete set null;" +
+                "ALTER TABLE contracts add foreign key (MaterialID) references materials(id) on delete set null;";
             Query(FKsQuery);
         }
 
-        private void CreateDatabase()
+        private void InitDatabase()
         {
             using (MySqlConnection connection = new MySqlConnection(StaticValues.CreateDatabaseConnectionString))
             {
@@ -552,9 +560,9 @@ namespace BuildMaterials.BD
         public List<Seller> Search(string text, bool iscustomer = false) =>
             Select($"SELECT * FROM Sellers WHERE CONCAT(companyname,' ', adress,' ', companyperson,' ',bank,' ',bankprop,' ', unp) like '%{text}%' and iscustomer = {iscustomer};");
 
-        public List<Seller> ToList()
+        public List<Seller> ToList(bool iscustomer = false)
         {
-            return Select("SELECT * FROM providers;");
+            return Select($"SELECT * FROM sellers where iscustomer = {iscustomer};");
         }
 
         public List<Seller> Select(string query)
@@ -639,8 +647,8 @@ namespace BuildMaterials.BD
             string sellerValue = obj.SellerID != null ? obj.SellerID + "," : "";
             using (MySqlCommand command = new MySqlCommand("INSERT INTO trades " +
                 $"(Date, {sellerParam} MaterialID, Count, Price,paytypeid) VALUES" +
-                $"('',{sellerValue}" +
-                $"'{obj.Material?.ID}',{obj.Count},{obj.Price},{obj.PayTypeID});", _connection))
+                $"('{obj.Date.ToMySQLDate()}',{sellerValue}" +
+                $"{obj.MaterialID},{obj.Count},{obj.Price},{obj.PayTypeID});", _connection))
             {
                 _connection.OpenAsync().Wait();
                 command.ExecuteNonQueryAsync().Wait();
@@ -663,9 +671,13 @@ namespace BuildMaterials.BD
             _connection.CloseAsync().Wait();
         }
 
+        public void Update(Trade obj) => App.DbContext.Query($"UPDATE Trades SET Count = {obj.Count}, Date = '{obj.Date.ToMySQLDate()}'," +
+            $"MaterialID = {obj.MaterialID},PayTypeID = {obj.PayTypeID},Price = {obj.Price},SellerID = {obj.SellerID},Summ = {obj.Summ} " +
+            $"WHERE ID = {obj.ID};");
+
         public List<Trade> Search(string text)
         {
-            return App.DBContext.Trades.Select($"SELECT * FROM trades WHERE CONCAT(SellerFio,' ', MaterialName) like '%{text}%';)");
+            return App.DbContext.Trades.Select($"SELECT * FROM trades WHERE CONCAT(SellerFio,' ', MaterialName) like '%{text}%';)");
         }
 
         public List<Trade> ToList()
@@ -698,11 +710,11 @@ namespace BuildMaterials.BD
 
         public const string CreateQuery = "CREATE TABLE IF NOT EXISTS ttns " +
                 "(ID int NOT NULL AUTO_INCREMENT, Shipper varchar(100), " +
-                "Consignee varchar(50) not null," +
+                "Consignee varchar(100) null," +
                 "Payer varchar(100) not null, count float not null," +
                 "price float, materialid int null," +
                 "CountUnits varchar(20), weight float not null," +
-                "date date not null, PRIMARY KEY (ID));";
+                "date date null, PRIMARY KEY (ID));";
 
         public TTNSTable()
         {
@@ -727,8 +739,17 @@ namespace BuildMaterials.BD
 
         private TTN GetTTN(MySqlDataReader reader)
         {
-            return new TTN(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetFloat(4),
-            reader.GetFloat(5), reader.GetInt32(6), reader.GetString(7), reader.GetFloat(8), reader.GetDateTime(9));
+            int id = reader.GetInt32(0);
+            string? shiper = reader.IsDBNull(1) ? null : (string)reader[1];
+            string? consignee = reader.IsDBNull(2) ? null : (string)reader[2];
+            string payer = (string)reader[3];
+            float count = (float)reader[4];
+            float? price = reader.IsDBNull(5) ? null : (float)reader[5];
+            int? matid = reader.IsDBNull(6) ? null : (int)reader[6];
+            string? units = reader.IsDBNull(7) ? null : (string)reader[7];
+            float weight = (float)reader[8];
+            DateTime date = (DateTime)reader[9];
+            return new TTN(id, shiper, consignee, payer, count, price, matid, units, weight, date);
         }
 
         public TTN ElementAt(int id)
@@ -826,9 +847,7 @@ namespace BuildMaterials.BD
     public class AccountsTable : IDBSetBase<Account>
     {
         private readonly MySqlConnection _connection;
-        public const string CreateQuery = "CREATE TABLE IF NOT EXISTS accounts " +
-                "(ID int NOT NULL AUTO_INCREMENT, Seller int, " +
-                "ShipperName varchar(50) not null," +
+        public const string CreateQuery = "CREATE TABLE IF NOT EXISTS accounts  (ID int NOT NULL AUTO_INCREMENT, Seller int, ShipperName varchar(50) not null," +
                 "ShipperAdress varchar(100) not null, ConsigneeName varchar(50) not null," +
                 "ConsigneeAdress varchar(100) not null, Buyer int null," +
                 "CountUnits varchar(20), Count float not null," +
@@ -858,8 +877,8 @@ namespace BuildMaterials.BD
 
         private Account GetAccount(MySqlDataReader reader)
         {
-            return new Account(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
-                reader.GetString(5), reader.GetString(6), reader.GetString(7),
+            return new Account(reader.GetInt32(0), reader.IsDBNull(1) ? -1 : reader.GetInt32(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
+                reader.GetString(5), reader.IsDBNull(6) ? -1 : reader.GetInt32(6), reader.GetString(7),
                 reader.GetFloat(8), reader.GetFloat(9), reader.GetFloat(10), reader.GetDateTime(11), reader.GetInt32(12));
         }
 
@@ -887,12 +906,12 @@ namespace BuildMaterials.BD
             using (MySqlCommand command = new MySqlCommand("INSERT INTO accounts " +
                 "(Seller, ShipperName, ShipperAdress, ConsigneeName, ConsigneeAdress," +
                 "Buyer,CountUnits, Count,Price,Tax,Date, materialid) VALUES" +
-                $"('{obj.Seller}','{obj.ShipperName}','{obj.ShipperAdress}','{obj.ConsigneeName}'," +
-                $"'{obj.ConsigneeAdress}','{obj.Buyer}','{obj.CountUnits}',{obj.Count},{obj.Price}," +
-                $"{obj.Date?.ToMySQLDate()}',{obj.MaterialID});", _connection))
+                $"({obj.SellerID},'{obj.ShipperName}','{obj.ShipperAdress}','{obj.ConsigneeName}'," +
+                $"'{obj.ConsigneeAdress}',{obj.BuyerID},'{obj.CountUnits}',{obj.Count},{obj.Price},{obj.Tax}," +
+                $"'{obj.Date?.ToMySQLDate()}',{obj.MaterialID});", _connection))
             {
                 _connection.OpenAsync().Wait();
-                command.ExecuteNonQueryAsync().Wait();
+                command.ExecuteNonQuery();
                 _connection.CloseAsync().Wait();
             }
         }
@@ -987,7 +1006,7 @@ namespace BuildMaterials.BD
 
         private Contract GetContract(MySqlDataReader reader)
         {
-            return new Contract(reader.GetInt32(0), reader.GetString(1), reader.GetString(2), reader.GetInt32(3), reader.GetFloat(4),
+            return new Contract(reader.GetInt32(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3), reader.GetFloat(4),
                 reader.GetString(5), reader.GetFloat(6), reader.GetDateTime(7));
         }
 
@@ -1015,7 +1034,7 @@ namespace BuildMaterials.BD
             using (MySqlCommand command = new MySqlCommand("INSERT INTO contracts " +
                 "(Seller, Buyer, MaterialID, Count, CountUnits," +
                 "Price, Date) VALUES" +
-                $"('{obj.Seller}','{obj.Buyer}','{obj.MaterialID}',{obj.Count}," +
+                $"('{obj.SellerID}','{obj.BuyerID}','{obj.MaterialID}',{obj.Count}," +
                 $"'{obj.CountUnits}',{obj.Price},'{obj.Date?.ToMySQLDate()}');", _connection))
             {
                 _connection.OpenAsync().Wait();
@@ -1134,5 +1153,33 @@ namespace BuildMaterials.BD
             }
         }
 
+        public List<PayType> ToList() => Select("SELECT * FROM PAYTYPES;");
+
+        public List<PayType> Select(string query)
+        {
+            List<PayType> ttns = new List<PayType>(64);
+            using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
+            {
+                _connection.OpenAsync().Wait();
+                using (MySqlCommand command = new MySqlCommand(query, _connection))
+                {
+                    MySqlDataReader reader = command.ExecuteMySqlReaderAsync();
+                    while (reader.Read())
+                    {
+                        ttns.Add(GetPayType(reader));
+                    }
+                }
+                _connection.CloseAsync().Wait();
+            }
+            return ttns;
+        }
+
+        private PayType GetPayType(MySqlDataReader reader)
+        {
+            int id = (int)reader[0];
+            string name = (string)reader[1];
+
+            return new PayType(id, name);
+        }
     }
 }

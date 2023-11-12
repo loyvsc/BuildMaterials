@@ -6,7 +6,35 @@ namespace BuildMaterials.Models
     {
         private readonly bool UseBD;
         public int ID { get; set; }
-        public string? Seller
+
+        public Seller? Seller
+        {
+            get => SellerID != null ? App.DbContext.Sellers.ElementAt((int)SellerID) : null;
+            set
+            {
+                if (value != null)
+                {
+                    SellerID = value.ID;
+                    OnPropertyChanged(nameof(Seller));
+                    OnPropertyChanged(nameof(SellerID));
+                }
+            }
+        }
+
+        public Seller Buyer
+        {
+            get => BuyerID != null ? App.DbContext.Sellers.ElementAt((int)BuyerID) : null;
+            set
+            {
+                if (value != null)
+                {
+                    BuyerID = value.ID;
+                    OnPropertyChanged(nameof(Buyer));
+                    OnPropertyChanged(nameof(BuyerID));
+                }
+            }
+        }
+        public int? SellerID
         {
             get => seller;
             set
@@ -14,11 +42,11 @@ namespace BuildMaterials.Models
                 seller = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET Seller ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contract SET Seller ={value} WHERE ID={ID};");
                 }
             }
         }
-        public string? Buyer
+        public int? BuyerID
         {
             get => buyer;
             set
@@ -26,7 +54,7 @@ namespace BuildMaterials.Models
                 buyer = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET Buyer ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contract SET Buyer ={value} WHERE ID={ID};");
                 }
             }
         }
@@ -38,7 +66,7 @@ namespace BuildMaterials.Models
                 matid = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contracts SET MaterialID ={value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contracts SET MaterialID ={value} WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Material));
                 OnPropertyChanged(nameof(MaterialID));
@@ -46,7 +74,7 @@ namespace BuildMaterials.Models
         }
         public Material? Material
         {
-            get => App.DBContext.Materials.ElementAt(MaterialID);
+            get => App.DbContext.Materials.ElementAt(MaterialID);
             set
             {
                 if (value != null)
@@ -64,7 +92,7 @@ namespace BuildMaterials.Models
                 count = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET Count ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contract SET Count ='{value}' WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Count));
                 OnPropertyChanged(nameof(Summ));
@@ -78,7 +106,7 @@ namespace BuildMaterials.Models
                 countUnits = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET CountUnits ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contract SET CountUnits ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -90,7 +118,7 @@ namespace BuildMaterials.Models
                 price = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET Price ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contract SET Price ='{value}' WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Price));
                 OnPropertyChanged(nameof(Summ));
@@ -105,7 +133,7 @@ namespace BuildMaterials.Models
                 date = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Contract SET Date ='{value!.Value.Year}-{value!.Value.Month}-{value!.Value.Day}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Contract SET Date ='{value!.Value.Year}-{value!.Value.Month}-{value!.Value.Day}' WHERE ID={ID};");
                 }
             }
         }
@@ -113,8 +141,8 @@ namespace BuildMaterials.Models
 
         private DateTime? date;
         private string? countUnits = string.Empty;
-        private string? seller = string.Empty;
-        private string? buyer = string.Empty;
+        private int? seller = -1;
+        private int? buyer = -1;
         private float count = 0;
         private float price = 0;
         private int matid = -1;
@@ -124,13 +152,13 @@ namespace BuildMaterials.Models
             UseBD = false;
         }
 
-        public Contract(int iD, string? seller, string? buyer, int matid, float count,
+        public Contract(int iD, int? seller, int? buyer, int matid, float count,
             string? countUnits, float price, DateTime? date)
         {
             UseBD = false;
             ID = iD;
-            Seller = seller;
-            Buyer = buyer;
+            SellerID = seller;
+            BuyerID = buyer;
             MaterialID = matid;
             Count = count;
             CountUnits = countUnits;
@@ -141,7 +169,7 @@ namespace BuildMaterials.Models
 
         public override string ToString()
         {
-            return $"Договор купли-продажи #{ID} от {DateInString}\nПокупатель: {Buyer}\nПродавец: {Seller}\nТовар \"{Material.Name}\" в количестве {Count} {CountUnits}.\nЦена за единицу ({CountUnits}): {Price}.\nСумма: {Summ}.\n\n               {Seller}\n\n               {Buyer}";
+            return $"Договор купли-продажи #{ID} от {DateInString}\nПокупатель: {BuyerID}\nПродавец: {SellerID}\nТовар \"{Material.Name}\" в количестве {Count} {CountUnits}.\nЦена за единицу ({CountUnits}): {Price}.\nСумма: {Summ}.\n\n               {SellerID}\n\n               {BuyerID}";
         }
 
         public bool IsValid => Date != null;

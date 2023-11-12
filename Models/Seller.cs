@@ -15,12 +15,12 @@ namespace BuildMaterials.Models
                 matId = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET MaterialID = {value} WHERE ID ={ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET MaterialID = {value} WHERE ID ={ID};");
                 }
             }
         }
         private int matId;
-        public Material? Material => App.DBContext.Materials.ElementAt(MaterialID);
+        public Material? Material => App.DbContext.Materials.ElementAt(MaterialID);
         public string CountUnits
         {
             get => countUnits;
@@ -29,7 +29,7 @@ namespace BuildMaterials.Models
                 countUnits = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET CountUnits = '{value}' WHERE ID ={ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET CountUnits = '{value}' WHERE ID ={ID};");
                 }
             }
         }
@@ -41,7 +41,7 @@ namespace BuildMaterials.Models
                 balStart = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET BalanceAtStart = '{value}' WHERE ID ={ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET BalanceAtStart = '{value}' WHERE ID ={ID};");
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace BuildMaterials.Models
                 prihod = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET Prihod = '{value}' WHERE ID ={ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET Prihod = '{value}' WHERE ID ={ID};");
                 }
             }
         }
@@ -65,7 +65,7 @@ namespace BuildMaterials.Models
                 rashod = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET Rashod = '{value}' WHERE ID ={ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET Rashod = '{value}' WHERE ID ={ID};");
                 }
             }
         }
@@ -77,7 +77,7 @@ namespace BuildMaterials.Models
                 balEnd = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET BalanceAtEnd = '{value}' WHERE ID ={ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET BalanceAtEnd = '{value}' WHERE ID ={ID};");
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace BuildMaterials.Models
                 finRespEmpID = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE MaterialResponses SET FinResponseEmployeeID = '{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE MaterialResponses SET FinResponseEmployeeID = '{value}' WHERE ID = {ID};");
                 }
                 OnPropertyChanged(nameof(FinResponseEmployeeID));
                 OnPropertyChanged(nameof(FinReponseEmployee));
@@ -97,7 +97,7 @@ namespace BuildMaterials.Models
         }
         public Employee? FinReponseEmployee
         {
-            get => App.DBContext.Employees.ElementAt(FinResponseEmployeeID);
+            get => App.DbContext.Employees.ElementAt(FinResponseEmployeeID);
             set
             {
                 if (value != null)
@@ -154,7 +154,7 @@ namespace BuildMaterials.Models
                 companyName = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET CompanyName ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET CompanyName ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace BuildMaterials.Models
                 adress = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET Adress ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET Adress ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -178,7 +178,7 @@ namespace BuildMaterials.Models
                 companyPerson = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET CompanyPerson ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET CompanyPerson ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -190,7 +190,7 @@ namespace BuildMaterials.Models
                 companyPhone = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET CompanyPhone ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET CompanyPhone ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -202,7 +202,7 @@ namespace BuildMaterials.Models
                 bank = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET Bank ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET Bank ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -214,7 +214,7 @@ namespace BuildMaterials.Models
                 bankProp = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET BankProp ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET BankProp ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace BuildMaterials.Models
                 unp = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET UNP ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET UNP ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -239,7 +239,7 @@ namespace BuildMaterials.Models
                 isCustomer = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Sellers SET IsCustomer ={value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Sellers SET IsCustomer ={value} WHERE ID={ID};");
                 }
             }
         }
@@ -285,8 +285,16 @@ namespace BuildMaterials.Models
 
         public override string ToString() => CompanyName!;
 
-        //TODO
-        public string AsString() =>
-            $"Заказчик №{ID}\nКомпания: {CompanyName}\nАдрес расположения: {Adress}\nПредставитель: {CompanyPerson} (контактный номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
+        public string AsString()
+        {
+            if (isCustomer)
+            {
+                return $"Заказчик №{ID}\nКомпания: {CompanyName}\nАдрес расположения: {Adress}\nПредставитель: {CompanyPerson} (контактный номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
+            }
+            else
+            {
+                return $"Поставщик №{ID}\nКомпания: {CompanyName}\nАдрес расположения: {Adress}\nПредставитель: {CompanyPerson} (контактный номер телефона: {CompanyPhone})\nУНП: {UNP}\nБанковские реквизиты: {Bank} {BankProp}";
+            }
+        }
     }
 }

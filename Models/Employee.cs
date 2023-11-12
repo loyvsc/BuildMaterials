@@ -15,7 +15,7 @@ namespace BuildMaterials.Models
                 name = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET Name ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET Name ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -27,7 +27,7 @@ namespace BuildMaterials.Models
                 surname = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET SurName ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET SurName ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -39,7 +39,7 @@ namespace BuildMaterials.Models
                 pathnetic = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET Pathnetic ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET Pathnetic ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -51,7 +51,7 @@ namespace BuildMaterials.Models
                 position = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET Position ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET Position ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -63,7 +63,7 @@ namespace BuildMaterials.Models
                 phoneNumber = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET PhoneNumber ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET PhoneNumber ='{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -75,12 +75,23 @@ namespace BuildMaterials.Models
                 password = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET Password ='{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET Password ='{value}' WHERE ID={ID};");
                 }
             }
         }
 
-        public string? DateInString => PassportIssueDate?.ToShortDateString();
+        public string? DateInString
+        {
+            get => PassportIssueDate?.ToShortDateString();
+            set
+            {
+                DateTime date;
+                if (DateTime.TryParse(value.Trim(), out date))
+                {
+                    PassportIssueDate = date;
+                }
+            }
+        }
         public bool FinResponsible
         {
             get => finResponsible;
@@ -89,7 +100,7 @@ namespace BuildMaterials.Models
                 finResponsible = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET FinResponsible = {value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET FinResponsible = {value} WHERE ID={ID};");
                 }
             }
         }
@@ -101,7 +112,7 @@ namespace BuildMaterials.Models
                 accessLevel = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employees SET AccessLevel ={value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE Employees SET AccessLevel ={value} WHERE ID={ID};");
                 }
             }
         }
@@ -118,7 +129,7 @@ namespace BuildMaterials.Models
                 passportNumber = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employee SET PassportNumber ='{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Employee SET PassportNumber ='{value}' WHERE ID = {ID};");
                 }
             }
         }
@@ -138,7 +149,7 @@ namespace BuildMaterials.Models
                 passportIssueDate = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE Employee SET PassportIssueDate ='{value}' WHERE ID = {ID};");
+                    App.DbContext.Query($"UPDATE Employee SET PassportIssueDate ='{value.Value.ToMySQLDate()}' WHERE ID = {ID};");
                 }
             }
         }
@@ -154,7 +165,7 @@ namespace BuildMaterials.Models
         private bool finResponsible = false;
         private int accessLevel;
 
-        public string AccessLevelInString => App.DBContext.AccessLevel[AccessLevel];
+        public string AccessLevelInString => App.DbContext.AccessLevel[AccessLevel];
 
         public Employee()
         {
@@ -205,8 +216,8 @@ namespace BuildMaterials.Models
         public string FIO => $"{SurName} {Name} {Pathnetic}";
 
         public bool IsValid =>
-            PassportIssueDate!=DateTime.Now &&
-            PassportNumber!=string.Empty &&
+            PassportIssueDate != DateTime.Now &&
+            PassportNumber != string.Empty &&
             Name != string.Empty &&
             SurName != string.Empty &&
             Pathnetic != string.Empty &&

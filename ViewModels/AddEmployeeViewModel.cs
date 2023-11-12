@@ -11,7 +11,7 @@ namespace BuildMaterials.ViewModels
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());        
 
         private readonly Window _window = null!;
-        public string[] EmployeeAccessLevel => App.DBContext.AccessLevel;
+        public string[] EmployeeAccessLevel => App.DbContext.AccessLevel;
         public int SelectedAccessLevel { get; set; }
 
         public AddEmployeeViewModel()
@@ -29,7 +29,7 @@ namespace BuildMaterials.ViewModels
             Employee.AccessLevel = SelectedAccessLevel;
             if (Employee.IsValid)
             {
-                App.DBContext.Employees.Add(Employee);
+                App.DbContext.Employees.Add(Employee);
                 _window.DialogResult = true;
                 return;
             }

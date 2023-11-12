@@ -1,8 +1,7 @@
 ﻿using BuildMaterials.Models;
+using BuildMaterials.ViewModels;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
-using BuildMaterials.ViewModels;
 
 namespace BuildMaterials.Views
 {

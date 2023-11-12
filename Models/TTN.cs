@@ -1,6 +1,4 @@
 ﻿using BuildMaterials.BD;
-using System;
-using System.ComponentModel;
 
 namespace BuildMaterials.Models
 {
@@ -16,7 +14,7 @@ namespace BuildMaterials.Models
                 shipper = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Shipper = '{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Shipper = '{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -28,7 +26,7 @@ namespace BuildMaterials.Models
                 consignee = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Consignee = '{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Consignee = '{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -40,7 +38,7 @@ namespace BuildMaterials.Models
                 payer = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Payer = '{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Payer = '{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -52,13 +50,13 @@ namespace BuildMaterials.Models
                 count = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Count={value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Count={value} WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Count));
                 OnPropertyChanged(nameof(Summ));
             }
         }
-        public float Price
+        public float? Price
         {
             get => price;
             set
@@ -66,26 +64,29 @@ namespace BuildMaterials.Models
                 price = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Price={value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Price={value} WHERE ID={ID};");
                 }
                 OnPropertyChanged(nameof(Price));
                 OnPropertyChanged(nameof(Summ));
             }
         }
-        public int MaterialID
+        public int? MaterialID
         {
             get => matid;
             set
             {
                 matid = value;
-                App.DBContext.Query($"UPDATE TTNS SET MaterialID = {value} WHERE ID = {ID};");
+                if (UseBD)
+                {
+                    App.DbContext.Query($"UPDATE TTNS SET MaterialID = {value} WHERE ID = {ID};");
+                }
                 OnPropertyChanged(nameof(MaterialID));
                 OnPropertyChanged(nameof(Material));
             }
         }
         public Material? Material
         {
-            get => App.DBContext.Materials.ElementAt(MaterialID);
+            get => MaterialID != null ? App.DbContext.Materials.ElementAt((int)MaterialID) : null;
             set
             {
                 if (value != null)
@@ -104,7 +105,7 @@ namespace BuildMaterials.Models
                 countUnits = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET CountUnits = '{value}' WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET CountUnits = '{value}' WHERE ID={ID};");
                 }
             }
         }
@@ -116,11 +117,11 @@ namespace BuildMaterials.Models
                 weight = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Weight = {value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Weight = {value} WHERE ID={ID};");
                 }
             }
         }
-        public float Summ => Count * Price;
+        public float? Summ => Count * Price;
         public DateTime? Date
         {
             get => date;
@@ -129,7 +130,7 @@ namespace BuildMaterials.Models
                 date = value;
                 if (UseBD)
                 {
-                    App.DBContext.Query($"UPDATE TTNS SET Date = {value} WHERE ID={ID};");
+                    App.DbContext.Query($"UPDATE TTNS SET Date = '{value.Value.ToMySQLDate()}' WHERE ID={ID};");
                 }
             }
         }
@@ -137,17 +138,27 @@ namespace BuildMaterials.Models
         private string? shipper = string.Empty;
         private string? consignee = string.Empty;
         private string? payer = string.Empty;
-        private int matid = -1;
+        private int? matid = -1;
         private string? countUnits = string.Empty;
         private float weight = 0;
         private float count = 0;
-        private float price = 0;
+        private float? price = 0;
         private DateTime? date;
 
-        public string? DateInString => Date?.ToShortDateString();
+        public string? DateInString
+        {
+            get => Date?.ToShortDateString();
+            set
+            {
+                if (value?.Trim() != string.Empty)
+                {
+                    Date = Convert.ToDateTime(value);
+                }
+            }
+        }
 
         public TTN() { UseBD = false; }
-        public TTN(int iD, string? shipper, string? consignee, string? payer, float count, float price, int matid, string countUnit, float weight, DateTime? date)
+        public TTN(int iD, string? shipper, string? consignee, string? payer, float count, float? price, int? matid, string countUnit, float weight, DateTime? date)
         {
             UseBD = false;
             ID = iD;
@@ -160,7 +171,7 @@ namespace BuildMaterials.Models
             CountUnits = countUnit;
             Weight = weight;
             Date = date;
-            UseBD = false;
+            UseBD = true;
         }
 
         public override string ToString()

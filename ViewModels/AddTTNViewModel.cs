@@ -1,5 +1,4 @@
-﻿using BuildMaterials.BD;
-using BuildMaterials.Models;
+﻿using BuildMaterials.Models;
 using System.Windows;
 using System.Windows.Input;
 
@@ -9,7 +8,7 @@ namespace BuildMaterials.ViewModels
     {
         public static MySqlDataReader ExecuteMySqlReaderAsync(this MySqlCommand command)
         {
-            return (MySqlDataReader) command.ExecuteReaderAsync().Result;
+            return (MySqlDataReader)command.ExecuteReaderAsync().Result;
         }
     }
 
@@ -21,7 +20,7 @@ namespace BuildMaterials.ViewModels
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
         private readonly Window _window = null!;
-        public List<Material> Materials => App.DBContext.Materials.ToList();
+        public List<Material> Materials => App.DbContext.Materials.ToList();
 
         public readonly Settings Settings = new Settings();
         public List<Seller>? CustomersList { get; set; }
@@ -34,7 +33,7 @@ namespace BuildMaterials.ViewModels
         public AddTTNViewModel(Window window) : this()
         {
             _window = window;
-            CustomersList = App.DBContext.Sellers.ToList();
+            CustomersList = App.DbContext.Sellers.ToList();
         }
 
         ~AddTTNViewModel()
@@ -46,7 +45,7 @@ namespace BuildMaterials.ViewModels
         {
             if (TTN.IsValid)
             {
-                App.DBContext.TTNs.Add(TTN);
+                App.DbContext.TTNs.Add(TTN);
                 _window.DialogResult = true;
                 return;
             }

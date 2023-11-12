@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BuildMaterials.Models
+﻿namespace BuildMaterials.Models
 {
     public class PayType
     {
         public int ID { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; }        
 
         public PayType()
         {

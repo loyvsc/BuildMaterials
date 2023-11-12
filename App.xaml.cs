@@ -2,13 +2,13 @@
 
 namespace BuildMaterials
 {
-    public partial class App : System.Windows.Application
+    public partial class App
     {
-        public static BD.ApplicationContext DBContext = null!;
+        public static BD.ApplicationContext DbContext = null!;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            DBContext = new BD.ApplicationContext();
+            DbContext = new BD.ApplicationContext();
             base.OnStartup(e);
         }
     }

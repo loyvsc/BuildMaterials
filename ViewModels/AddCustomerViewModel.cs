@@ -14,7 +14,7 @@ namespace BuildMaterials.ViewModels
 
         public AddCustomerViewModel()
         {
-            Customer = new Models.Seller();
+            Customer = new Models.Seller(true);
         }
 
         public AddCustomerViewModel(Window window) : this()
@@ -26,7 +26,7 @@ namespace BuildMaterials.ViewModels
         {
             if (Customer.IsValid)
             {
-                App.DBContext.Sellers.Add(Customer);
+                App.DbContext.Sellers.Add(Customer);
                 _window.DialogResult = true;
                 return;
             }

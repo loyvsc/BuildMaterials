@@ -23,7 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FrameworkExtract.System.Deployment" Version="4.0.30319" />
     <PackageReference Include="MySql.Data" Version="8.1.0" />
+    <PackageReference Include="OrchardCore.Deployment" Version="1.7.2" />
   </ItemGroup>
 
   <ItemGroup>

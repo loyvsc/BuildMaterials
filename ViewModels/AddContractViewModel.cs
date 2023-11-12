@@ -1,74 +1,38 @@
-﻿using BuildMaterials.BD;
-using BuildMaterials.Models;
+﻿using BuildMaterials.Models;
 using System.Windows;
 using System.Windows.Input;
 
 namespace BuildMaterials.ViewModels
 {
-    public class AddContractViewModel
+    public class AddContractViewModel : NotifyPropertyChangedBase
     {
-        public Contract Contract { get; set; }
+        public Contract Contract
+        {
+            get => contr;
+            set
+            {
+                contr = value;
+                OnPropertyChanged(nameof(Contract));
+            }
+        }
         public ICommand CancelCommand => new RelayCommand((sender) => _window.Close());
         public ICommand AddCommand => new RelayCommand((sender) => AddMaterial());
 
         private readonly Window _window = null!;
         public readonly Settings Settings;
+        public Contract contr;
 
-        public List<Material> Materials => App.DBContext.Materials.ToList();
-
-        public List<Seller> CustomersList
-        {
-            get
-            {
-                List<Seller> customers = new List<Seller>(128);
-                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-                {
-                    _connection.Open();
-                    using (MySqlCommand _command = new MySqlCommand
-                        ("SELECT CompanyName, Adress FROM customers union SELECT CompanyName, Adress FROM providers;", _connection))
-                    {
-                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
-                            while (reader.Read())
-                            {
-                                customers.Add(new Seller() { CompanyName = reader.GetString(0), Adress = reader.GetString(1) });
-                            }
-                    }
-                    _connection.Close();
-                }
-                customers.Add(new Seller() { CompanyName = Settings.CompanyName, Adress = Settings.CompanyAdress });
-                return customers;
-            }
-        }
-
-        public string[] EmployeeNames
-        {
-            get
-            {
-                List<string> fio = new List<string>(32);
-                using (MySqlConnection _connection = new MySqlConnection(StaticValues.ConnectionString))
-                {
-                    _connection.OpenAsync().Wait();
-                    using (MySqlCommand _command = new MySqlCommand("SELECT Name, Surname, pathnetic FROM Employees;", _connection))
-                    {
-                        using (MySqlDataReader reader = _command.ExecuteMySqlReaderAsync())
-                            while (reader.Read())
-                            {
-                                fio.Add($"{reader.GetString(0)} {reader.GetString(1)} {reader.GetString(2)}");
-                            }
-                    }
-                    _connection.CloseAsync().Wait();
-                }
-                return fio.ToArray();
-            }
-        }
+        public List<Material> Materials => App.DbContext.Materials.ToList();
+        public List<Seller> CustomersList => App.DbContext.Sellers.ToList(true);
+        public List<Seller> ProvidersList => App.DbContext.Sellers.ToList();
 
         public int SelectedShipperIndex;
         public int SelectedConsigneeIndex;
 
         public AddContractViewModel()
         {
-            Contract = new Contract();
             Settings = new Settings();
+            Contract = new Contract();
         }
 
         public AddContractViewModel(Window window) : this()
@@ -80,7 +44,7 @@ namespace BuildMaterials.ViewModels
         {
             if (Contract.IsValid)
             {
-                App.DBContext.Contracts.Add(Contract);
+                App.DbContext.Contracts.Add(Contract);
                 _window.DialogResult = true;
                 return;
             }

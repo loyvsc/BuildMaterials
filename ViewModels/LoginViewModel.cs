@@ -1,7 +1,6 @@
 ﻿using BuildMaterials.BD;
 using BuildMaterials.Models;
 using BuildMaterials.Views;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
@@ -11,7 +10,7 @@ namespace BuildMaterials.ViewModels
     {
         public List<Employee> Employees => GetEmployees();
         public ICommand AutorizeCommand => new RelayCommand((sender) => Autorize());
-        public int SelectedTypeIndex { get; set; }        
+        public int SelectedTypeIndex { get; set; }
         public string? EnteredPassword
         {
             get => _enteredPassword;
@@ -42,7 +41,7 @@ namespace BuildMaterials.ViewModels
         }
 
         public LoginViewModel() { }
-        
+
         public LoginViewModel(Window parentWindow) : this()
         {
             _window = parentWindow;

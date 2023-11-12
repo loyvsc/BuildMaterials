@@ -4,22 +4,19 @@ using System.Windows.Data;
 
 namespace BuildMaterials.Converters
 {
-    public class ItemToIDConverter : IValueConverter
+    public class BoolToVisibility : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (parameter.Equals(null))
+            bool bl = (bool)value;
+            if (bl)
             {
-                return null!;
+                return Visibility.Visible;
             }
-            List<string>? list = parameter as List<string>;
-            int index = list!.FindIndex(c => c == value as string);
-            return index;
+            else return Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return DependencyProperty.UnsetValue;
-        }
+            => DependencyProperty.UnsetValue;
     }
 }

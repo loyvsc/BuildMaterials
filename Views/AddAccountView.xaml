@@ -20,7 +20,13 @@
             <TextBlock Margin="0,5,0,5">Дата</TextBlock>
             <DatePicker SelectedDate="{Binding Account.Date}"/>
             <TextBlock Margin="0,5,0,5">Продавец</TextBlock>
-            <ComboBox ItemsSource="{Binding EmployeeNames}" SelectedValue="{Binding Account.Seller}"/>
+            <ComboBox ItemsSource="{Binding Employees}" SelectedValue="{Binding Account.Seller}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding FIO}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
             <TextBlock Margin="0,5,0,5">Грузоотправитель</TextBlock>
             <ComboBox ItemsSource="{Binding CustomersList}" SelectedIndex="{Binding SelectedShipperIndex}" SelectedValue="{Binding Account.ShipperName}">
                 <ComboBox.ItemTemplate>
@@ -37,9 +43,15 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            
+
             <TextBlock Margin="0,5,0,5">Покупатель</TextBlock>
-            <TextBox Text="{Binding Account.Buyer}"/>
+            <ComboBox ItemsSource="{Binding Employees}" SelectedValue="{Binding Account.Buyer}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding FIO}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
 
             <TextBlock Margin="0,5,0,5">Материал</TextBlock>
             <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding Account.Material}"/>
@@ -49,12 +61,12 @@
             <TextBlock Margin="0,5,0,5">Ед. измерения</TextBlock>
             <TextBox Text="{Binding Account.CountUnits}"/>
             <TextBlock Margin="0,5,0,5">Стоимость за единицу</TextBlock>
-            <TextBox Text="{Binding Account.Price}"/>
+            <TextBox Text="{Binding Account.Price,UpdateSourceTrigger=PropertyChanged}"/>
             <TextBlock Margin="0,5,0,5">Налогагая ставка (%,0-100)</TextBlock>
-            <TextBox Text="{Binding Account.Tax}"/>
-            <TextBlock Margin="0,5,0,0">Сумма: <TextBlock Text="{Binding Account.Summ}"/></TextBlock>
-            <TextBlock Margin="0,5,0,0">Сумма налога: <TextBlock Text="{Binding Account.TaxSumm}"/></TextBlock>
-            <TextBlock Margin="0,5,0,0" Text="{Binding Account.FinalSummAtString}"/>
+            <TextBox Text="{Binding Account.Tax,UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Margin="0,5,0,0">Сумма: <TextBlock Text="{Binding Account.Summ,UpdateSourceTrigger=PropertyChanged}"/></TextBlock>
+            <TextBlock Margin="0,5,0,0">Сумма налога: <TextBlock Text="{Binding Account.TaxSumm,UpdateSourceTrigger=PropertyChanged}"/></TextBlock>
+            <TextBlock Margin="0,5,0,0" Text="{Binding Account.FinalSummAtString,UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
             <Button Grid.Row="1" Margin="5,0,5,5" MinWidth="75" Command="{Binding AddCommand}">Добавить</Button>

@@ -29,7 +29,7 @@ namespace BuildMaterials.ViewModels
             {
                 Material.Count = Material.Count;
                 Material.EnterDate = DateTime.Now.Date;
-                App.DBContext.Materials.Add(Material);
+                App.DbContext.Materials.Add(Material);
                 _window.DialogResult = true;
                 return;
             }

@@ -1,10 +1,9 @@
-﻿using BuildMaterials.ViewModels;
-using System.Windows;
+﻿using System.Windows;
 
 namespace BuildMaterials.Views
 {
     public partial class AddTradeView : Window
-    {        
+    {
         public AddTradeView()
         {
             InitializeComponent();
